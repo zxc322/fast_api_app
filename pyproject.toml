@@ -1,10 +1,9 @@
 [tool.poetry]
-name = "fast-api-01"
+name = "fast-api-app"
 version = "0.1.0"
 description = ""
 authors = ["zxc_322 <kvasoliaeww@gmail.com>"]
 readme = "README.md"
-packages = [{include = "fast_api_01"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"

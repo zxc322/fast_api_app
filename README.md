@@ -10,8 +10,8 @@
 
 ### with docker
 
-    docker build .
-    docker run -p 8000:8000 -v "$(pwd)/src:/app/src" <image_id>
+    docker build -t appimage .
+    docker run -p 8000:8000 -v "$(pwd)/src:/app/src" appimage
 
 ### app must be running on `localhost:8000` 
 

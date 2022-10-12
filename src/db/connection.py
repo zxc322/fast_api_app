@@ -1,3 +1,4 @@
 import databases
-DATABASE_URL = "postgresql://zxc:zxc@postgres:5432/fastapi_dev"
+
+from settings.config import DATABASE_URL
 database = databases.Database(DATABASE_URL)

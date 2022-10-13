@@ -26,6 +26,7 @@
 
 ### Migrations
 
+    docker exec -it fastapi_web_container bash
     alembic revision --autogenerate -m 'migration_<version>'
     alembic upgrade head
 

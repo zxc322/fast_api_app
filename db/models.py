@@ -16,8 +16,10 @@ class User(Base):
     is_active = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) 
-    #updated_by = relationship("User", back_populates="users", default=1)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # updated_by = Column(Integer, ForeignKey('users'))  
+    # updator = relationship("User") 
 
 
 

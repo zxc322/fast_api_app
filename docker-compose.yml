@@ -6,13 +6,7 @@ services:
     build: .
     command: python main.py
     volumes:
-      - ./main.py:/app/main.py
-      - ./db:/app/db
-      - ./my_redis:/app/my_redis
-      - ./schemas:/app/schemas
-      - ./settings:/app/settings
-      - ./alembic:/app/alembic
-      - ./alembic.ini:/app/alembic.ini
+      - .:/app
     env_file:
       - ./.env
     ports:

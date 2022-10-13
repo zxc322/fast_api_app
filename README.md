@@ -26,9 +26,10 @@
 
 ### Migrations
 
-    docker exec -it fastapi_web_container bash
-    alembic revision --autogenerate -m 'migration_<version>'
-    alembic upgrade head
+    docker exec fastapi_web_container alembic revision --autogenerate -m 'migration_1'
+    docker exec fastapi_web_container alembic upgrade head
+
+
 
 ### We can find table 'users' in our database on `localhost:5050`
 

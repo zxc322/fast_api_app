@@ -1,3 +1,4 @@
+from ssl import _PasswordType
 from pydantic import BaseModel, EmailStr, constr, validator
 from typing import Optional
 from datetime import date
@@ -29,6 +30,10 @@ class UserCreate(BaseUser):
         if 'password1' in values and v != values['password1']:
             raise ValueError('passwords do not match')
         return v
+
+class UserSignIn(BaseUser):
+    password: str
+    
 
 class UpdateUser(BaseUser):
     is_active: Optional[bool] = False

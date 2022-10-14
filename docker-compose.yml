@@ -51,7 +51,7 @@ services:
     volumes:
       - "pgadmin:/var/lib/pgadmin"
     ports:
-      - ${PGADMIN_PORT}:80
+      - ${PGADMIN_PORT}:${PGADMIN_CONTAINER_PORT}
     restart: unless-stopped
 
   redis:

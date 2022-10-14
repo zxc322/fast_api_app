@@ -1,9 +1,11 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Response, Request
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 from db.connection import database
+from db.base import SessionLocal, engine
 from my_redis.config import init_redis_pool
+from api_routers import routers
 
 app = FastAPI()
 
@@ -43,7 +45,17 @@ async def redis_test(key: str, value: str):
         print(ex, "Smth wrong...")
     return {key:value}
 
+@app.middleware("http")
+async def db_session_middleware(request: Request, call_next):
+    response = Response("Internal server error", status_code=500)
+    try:
+        request.state.db = SessionLocal()
+        response = await call_next(request)
+    finally:
+        request.state.db.close()
+    return response
 
+app.include_router(routers.api_router)
 
 
 

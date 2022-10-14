@@ -30,7 +30,7 @@ async def shutdown():
 
 @app.get('/')
 def home():
-    return {'status': 'Working'}
+    return {'status': 'Working111'}
 
 #  gor test redis 
 

@@ -4,11 +4,13 @@ services:
   web:
     container_name: fastapi_web_container
     build: .
-    command: python src/main.py
+    command: python main.py
     volumes:
-      - ./src:/app/src
+      - .:/app
+    env_file:
+      - ./.env
     ports:
-      - 8000:8000
+      - ${WEB_PORT}:${WEB_PORT}
     depends_on:
       postgres:
         condition: service_healthy
@@ -25,7 +27,7 @@ services:
     volumes:
       - "postgres:/var/lib/postgresql/data"
     ports:
-      - "5432:5432"
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -49,28 +51,27 @@ services:
     volumes:
       - "pgadmin:/var/lib/pgadmin"
     ports:
-      - "5050:80"
+      - ${PGADMIN_PORT}:${PGADMIN_CONTAINER_PORT}
     restart: unless-stopped
 
   redis:
-    container_name: fastapi_redis_container
     image: redis:latest
-    restart: always
-    command: ["redis-server", "--appendonly", "yes"]
+    container_name: redis_fastapi_db
+    env_file:
+      - ./.env
     ports:
-      - "6379:6379"
+      - ${REDIS_PORT}:${REDIS_PORT}
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - "redis:/var/lib/redis/data"
+      - redis:/var/lib/redis/data
 
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: redis-ui
-    env_file:
-      - ./.env
     environment:
-      REDIS_HOSTS: ${REDIS_HOSTS}
-      HTTP_USER: ${HTTP_USER}
-      HTTP_PASSWORD: ${HTTP_PASSWORD}
+      REDIS_HOSTS: "local:redis:6379"
+      HTTP_USER: "zxc"
+      HTTP_PASSWORD: "zxc"
     ports:
       - 8081:8081
     depends_on:

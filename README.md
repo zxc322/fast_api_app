@@ -24,4 +24,13 @@
 ###### You can open with ["user:zxc", "password:zxc"]
 ###### test redis on `localhost:8000/redis/{key}/{value} will add {"key": "value"} to redis
 
+### Migrations
+
+    docker exec fastapi_web_container alembic revision --autogenerate -m 'migration_1'
+    docker exec fastapi_web_container alembic upgrade head
+
+
+
+### We can find table 'users' in our database on `localhost:5050`
+
 

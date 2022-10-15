@@ -1,0 +1,58 @@
+
+[INFO]
+User with id"30" was changed
+Fieeld username have been changed
+Value "string1" replaced by "string1"
+====================================================================================================
+[INFO]
+new user have been CREATED
+{"password": "$2b$12$HqAseDBuwF9zcGSVtvLy5./xRtI3ShF.HgmwHkFO9TdloVFmY4sK2",
+"email": "user@example1111.com",
+"username": "string",
+"about_me": "string",
+"is_active": false,
+"created_at": "2022-10-15T00:06:42.827064",
+"updated_by": null,
+"id": 32,
+"is_admin": false,
+"updated_at": "2022-10-15T00:06:42.827072"}
+====================================================================================================
+[INFO]
+User with id"30" have been deleted!
+====================================================================================================
+[INFO]
+User with id"31" have been deleted!
+====================================================================================================
+[INFO]
+User with id"29" have been changed
+Fieeld username have been changed
+Value "me" replaced by "asd"
+====================================================================================================
+[INFO]
+User with id "29" have been changed
+Fieeld username have been changed
+Value "asd" replaced by "asd2"
+====================================================================================================
+[INFO]
+User with id "29" have been changed!
+Field username have been changed
+Value "asd2" replaced by "asd21"
+====================================================================================================
+[INFO]
+User with id "29" have been changed!
+Field [username] have been changed
+Value "asd21" replaced by "asd211"
+====================================================================================================
+[INFO]
+new user have been CREATED!
+{"password": "$2b$12$OeE0L2BV/4OFug8izD7IuusKl5nMggnrX6fvuM3a5Sy7V9Cn2yAoS",
+"email": "user@example11111.com",
+"username": "string",
+"about_me": "string",
+"is_active": false,
+"created_at": "2022-10-15T00:20:49.489157",
+"updated_by": null,
+"id": 33,
+"is_admin": false,
+"updated_at": "2022-10-15T00:20:49.489169"}
+====================================================================================================

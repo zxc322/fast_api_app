@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi_pagination  import Page, LimitOffsetPage, paginate, add_pagination
+import json
 
 from db.base import get_db
 from schemas.user import User, UserCreate, UpdateUser
 from db.models import User as DBUser
 from repositories import user as crud_user
+from repositories.service import Log
+from fastapi.encoders import jsonable_encoder
 
 
 router = APIRouter()
@@ -20,6 +23,10 @@ def create_user(db: Session = Depends(get_db), *, user_in: UserCreate) -> User:
             detail="The user with this email already exists in the system.",
         )
     response_user = crud_user.create(db, user_in=user_in)
+    
+    user_data = jsonable_encoder(response_user)
+    with open('logs_database.log', 'a') as f:
+        f.write(Log.write_to_file_created(json.dumps(user_data)))  
     return response_user
 
 @router.get('/{id}', response_model=User)

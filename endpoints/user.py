@@ -1,8 +1,5 @@
-from urllib import response
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List, Union, Dict
-from fastapi_pagination  import Page, LimitOffsetPage, paginate, add_pagination
 import json
 
 from db.base import get_db

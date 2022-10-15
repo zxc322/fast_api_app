@@ -1,4 +1,3 @@
-from lib2to3.pgen2.token import OP
 from pydantic import BaseModel, EmailStr, constr, validator
 from typing import Optional
 from datetime import date

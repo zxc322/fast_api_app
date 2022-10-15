@@ -2,20 +2,26 @@ from typing import Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from typing import List
+import math
 
 from db.models import User as DBUser
-from schemas.user import User, UserCreate, UpdateUser
+from schemas.user import UserCreate, UpdateUser, User
 from security.auth import get_password_hash
-from repositories.service import Log
+from repositories.service import Log, paginate_data
 
 
-def get_by_email(db_session: Session, email: str) -> Optional[DBUser]:
+class UserCRUD:
+    
+    @staticmethod
+    def get_by_email(db_session: Session, email: str) -> Optional[DBUser]:
         return db_session.query(DBUser).filter(DBUser.email == email).first()
-
-def get_by_id(db_session: Session, id: int) -> Optional[DBUser]:
+    
+    @staticmethod
+    def get_by_id(db_session: Session, id: int) -> Optional[DBUser]:
         return db_session.query(DBUser).filter(DBUser.id == id).first()
 
-def create(db_session: Session, user_in: UserCreate) -> DBUser:
+    @staticmethod
+    def create(db_session: Session, user_in: UserCreate) -> DBUser:
         user = DBUser(
             username=user_in.username,
             email=user_in.email,
@@ -27,8 +33,8 @@ def create(db_session: Session, user_in: UserCreate) -> DBUser:
         db_session.refresh(user)
         return user
 
-
-def update(db_session: Session, user: DBUser, user_in: UpdateUser) -> DBUser:
+    @staticmethod
+    def update(db_session: Session, user: DBUser, user_in: UpdateUser) -> DBUser:
         user_data = jsonable_encoder(user)
         updated_data = user_in.dict(skip_defaults=True)
         if 'password' in updated_data.keys():
@@ -50,15 +56,28 @@ def update(db_session: Session, user: DBUser, user_in: UpdateUser) -> DBUser:
         db_session.refresh(user)
         return user
 
-def remove(db_session: Session, *, id: int) -> DBUser:
-        user = db_session.query(DBUser).get(id)
-        db_session.delete(user)
-        db_session.commit()
+    @staticmethod
+    def remove(db_session: Session, id: int) -> DBUser:
+        if db_session.query(DBUser).filter(DBUser.id == id).count():
+                user = db_session.query(DBUser).get(id)
+                db_session.delete(user)
+                db_session.commit()
 
-        with open('logs_database.log', 'a') as f:
-                f.write(Log.write_to_file_deleted(id))
+                with open('logs_database.log', 'a') as f:
+                        f.write(Log.write_to_file_deleted(id))
 
-        return user
+                return user
 
+    @staticmethod
+    def get_users(db_session: Session, page: int = 1, limit: int = 10) -> List:
+        if page<1:
+                page = 1
+        skip = (page-1) * limit
+        end = skip + limit
 
-
+        queryset = db_session.query(DBUser).offset(skip).limit(limit).all()
+        count = db_session.query(DBUser).count()
+        total_pages = math.ceil(count/limit)
+        pagination = paginate_data(page, count, total_pages, end, limit)
+        return {'users': queryset, 'pagination': pagination}
+        

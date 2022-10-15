@@ -21,3 +21,26 @@ class Log:
         full_text = '[INFO]\nUser with id "{}" have been deleted!\n'.format(id)
         full_text += '=' * 100 + '\n'
         return full_text
+
+
+def paginate_data(page, count, total_pages, end, limit):
+    paginate = {'page': page,
+                'objects_count': count,
+                'total_pages': total_pages,
+                'pages': dict()}
+
+    if end >= count:
+                paginate['pages']['next'] = None
+                if page > 1:
+                        paginate['pages']['previous'] = '/users/?page={}&limit={}'.format(page-1, limit)
+                else:
+                        paginate['pages']['previous'] = None
+    else:
+            if page > 1:
+                    paginate['pages']['previous'] = '/users/?page={}&limit={}'.format(page-1, limit)
+            else:
+                    paginate['pages']['previous'] = None
+
+            paginate['pages']['next'] = '/users/?page={}&limit={}'.format(page+1, limit)
+
+    return paginate

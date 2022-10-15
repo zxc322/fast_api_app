@@ -4,3 +4,7 @@ src/__pycache__
 src/my_redis/__pycache__
 src/db/__pycache__
 .env
+.py
+logs_database.log
+logs_response_time.log
+alembic/versions/

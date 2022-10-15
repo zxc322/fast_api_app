@@ -2,6 +2,7 @@ from lib2to3.pgen2.token import OP
 from pydantic import BaseModel, EmailStr, constr, validator
 from typing import Optional
 from datetime import date
+from typing import List, Dict
 
 
 class User(BaseModel):
@@ -49,6 +50,9 @@ class UpdateUser(BaseModel):
     class Config:
         orm_mode = True
 
+class Users(BaseModel):
+    users: List[User] = []
+    pagination: Dict
 
 
 

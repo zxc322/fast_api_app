@@ -33,4 +33,6 @@
 
 ### We can find table 'users' in our database on `localhost:5050`
 
+### Info about how to CRUD users you can find at `localhost:8000/docs`
+
 

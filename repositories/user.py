@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-from typing import List
+from typing import Dict
 import math
 
 from db.models import User as DBUser
@@ -69,7 +69,7 @@ class UserCRUD:
                 return user
 
     @staticmethod
-    def get_users(db_session: Session, page: int = 1, limit: int = 10) -> List:
+    def get_users(db_session: Session, page: int = 1, limit: int = 10) -> Dict:
         if page<1:
                 page = 1
         skip = (page-1) * limit

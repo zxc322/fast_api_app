@@ -7,4 +7,3 @@ src/db/__pycache__
 .py
 logs_database.log
 logs_response_time.log
-alembic/versions/

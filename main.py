@@ -5,7 +5,6 @@ import logging, random, string
 from datetime import datetime
 
 from db.connection import database
-from db.base import SessionLocal, engine
 from my_redis.config import init_redis_pool
 from api_routers import routers
 app = FastAPI()
@@ -37,16 +36,6 @@ async def shutdown():
 def home():
     return {'status': 'Working'}
 
-
-@app.middleware("http")
-async def db_session_middleware(request: Request, call_next):
-    response = Response("Internal server error", status_code=500)
-    try:
-        request.state.db = SessionLocal()
-        response = await call_next(request)
-    finally:
-        request.state.db.close()
-    return response
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):

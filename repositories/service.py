@@ -1,3 +1,5 @@
+from typing import Dict
+
 class Log:
     """ Completing text to write it to the file """
 
@@ -23,7 +25,7 @@ class Log:
         return full_text
 
 
-def paginate_data(page, count, total_pages, end, limit):
+async def paginate_data(page, count, total_pages, end, limit) -> Dict:
     paginate = {'page': page,
                 'objects_count': count,
                 'total_pages': total_pages,

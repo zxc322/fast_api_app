@@ -19,9 +19,12 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
+class UserRsposneId(BaseModel):
+    id : int
+
 
 class UserCreate(BaseModel):
-    username: str
+    username: constr(min_length=3)
     email: EmailStr
     password1: constr(min_length=3)
     password2: str
@@ -39,15 +42,12 @@ class UserSignIn(BaseModel):
     
 
 class UpdateUser(BaseModel):
-    username: Optional[str]
+    username: Optional[constr(min_length=3)]
     password: Optional[constr(min_length=3)]
     about_me: Optional[str]
-    is_active: Optional[bool]
-    is_admin: Optional[bool]
+    is_active: Optional[bool] = False
+    is_admin: Optional[bool] = False
 
-
-    class Config:
-        orm_mode = True
 
 class Users(BaseModel):
     users: List[User] = []

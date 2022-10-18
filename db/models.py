@@ -22,5 +22,5 @@ class User(Base):
     updated_by = Column(Integer, nullable=True)  
 
 
-
+user = User.__table__
 

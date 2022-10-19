@@ -19,14 +19,13 @@ class UserCRUD:
     
     async def get_by_email(self, email) -> User:
         user = await database.fetch_one(self.db_user.select().where(self.db_user.c.email == email))
-        return user
+        return User(**user) if user else None
     
     async def get_by_id(self, id: int) -> User:
         user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id))
         if not user:
             raise CustomError(id=id)
-        user = dict(user)
-        return user
+        return User(**user)
 
     async def create(self, user_in: UserCreate) -> UserRsposneId:
         now = datetime.utcnow()
@@ -41,7 +40,7 @@ class UserCRUD:
             updated_at=now
         )      
         new_user_id = await database.execute(user)
-        return {'id': new_user_id}
+        return UserRsposneId(**{'id': new_user_id})
 
     async def update(self, id: int, user_in: dict) -> UserRsposneId:
         now = datetime.utcnow()     
@@ -54,7 +53,7 @@ class UserCRUD:
     async def remove(self, id: int) -> UserRsposneId:
         u = self.db_user.delete().where(self.db_user.c.id==id)
         await database.execute(u)
-        return {'id': id}
+        return UserRsposneId(**{'id': id})
 
 
     async def get_users(self, page: int = 1, limit: int = 10) -> Users:
@@ -72,5 +71,5 @@ class UserCRUD:
 
         users = [dict(result) for result in queryset]
         pagination = await paginate_data(page, count, total_pages, end, limit)
-        return {'users': users, 'pagination': pagination}
+        return Users(**{'users': users, 'pagination': pagination})
         

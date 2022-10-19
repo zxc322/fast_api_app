@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 import json
 
 from schemas.user import User, UserCreate, UpdateUser, Users, UserRsposneId
@@ -19,7 +19,7 @@ async def create_user(user_in: UserCreate) -> User:
     
     response_user = await crud.get_by_email(email=user_in.email)
     if response_user:
-        raise CustomError()
+        raise CustomError(user_exists=True)
 
     response_user = await crud.create(user_in=user_in)
     # logs

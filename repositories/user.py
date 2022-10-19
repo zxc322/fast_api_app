@@ -22,6 +22,7 @@ class UserCRUD:
         return User(**user) if user else None
     
     async def get_by_id(self, id: int) -> User:
+        print('sdsadsadsa', id)
         user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id))
         if not user:
             raise CustomError(id=id)

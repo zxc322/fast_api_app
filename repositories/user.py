@@ -22,7 +22,6 @@ class UserCRUD:
         return User(**user) if user else None
     
     async def get_by_id(self, id: int) -> User:
-        print('sdsadsadsa', id)
         user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id))
         if not user:
             raise CustomError(id=id)
@@ -54,7 +53,7 @@ class UserCRUD:
     async def remove(self, id: int) -> UserRsposneId:
         u = self.db_user.delete().where(self.db_user.c.id==id)
         await database.execute(u)
-        return UserRsposneId(**{'id': id})
+        return UserRsposneId(id=id)
 
 
     async def get_users(self, page: int = 1, limit: int = 10) -> Users:
@@ -72,5 +71,5 @@ class UserCRUD:
 
         users = [dict(result) for result in queryset]
         pagination = await paginate_data(page, count, total_pages, end, limit)
-        return Users(**{'users': users, 'pagination': pagination})
+        return Users(users=users, pagination=pagination)
         

@@ -20,6 +20,7 @@ bcrypt = "^4.0.1"
 fastapi-pagination = "^0.10.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 python-multipart = "^0.0.5"
+PyJWT = "^2.6.0"
 
 
 [build-system]

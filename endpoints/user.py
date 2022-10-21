@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=UserRsposneId, status_code=201)
-async def create_user(user_in: UserCreate) -> User:
+async def create_user(user_in: UserCreate) :
     crud = UserCRUD(db_user=DBUser)
     
     response_user = await crud.get_by_email(email=user_in.email)

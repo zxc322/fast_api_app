@@ -6,8 +6,9 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from schemas.token import TokenData
-from schemas.user import User
+from schemas.user import User, UserRsposneId
 from settings import config
+from security.auth0 import VerifyToken
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -39,28 +40,31 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     return encoded_jwt
 
 
-async def get_current_user(crud, token: str = Depends(oauth2_scheme)) -> User:  
+
+async def get_current_user(crud, token) -> UserRsposneId:
+
+    """ First try to decode token with 'HS256'. If success get user by email and return users id
+        If error try to decode with 'RS256'(VerifyToken instanse). 
+        instanse.verify() returns id or raise error"""
+     
     try:
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        payload = jwt.decode(token.credentials, config.SECRET_KEY, algorithms=[config.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
         token_data = TokenData(email=email)
     except JWTError:
-        raise credentials_exception
-    print('crud', type(crud))
+        #raise credentials_exception
+        try:
+            instanse = VerifyToken(token.credentials, crud=crud)
+            result = await instanse.verify()
+            print(result)
+            return result
+        except:
+            raise credentials_exception
     user = await crud.get_by_email(email=token_data.email)
+    user_id = {'id': user.id}
     if user is None:
         raise credentials_exception
-    return user
+    return UserRsposneId(**user_id)
 
-async def return_current_user(request: Request, crud):
-    try:
-        full_token = request.headers.get('Authorization').split(' ')
-        if full_token and full_token[0] == 'Bearer':
-            token = full_token[1]
-            user = await get_current_user(token=token, crud=crud)
-            return user
-        else: raise credentials_exception
-    except:
-        raise credentials_exception

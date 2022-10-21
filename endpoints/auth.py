@@ -19,7 +19,7 @@ router = APIRouter()
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: UserSignIn) -> Token:
 
-    """ Taking email+password and generate token if user with exists or raise exepcion if not """
+    """ Taking email+password and generate token if data is valid or raise exepcion """
 
     crud = UserCRUD(db_user=DBUser)
     user = await crud.get_by_email(email=form_data.email)

@@ -2,7 +2,6 @@ from starlette.exceptions import HTTPException
 
 class CustomError(HTTPException):
     def __init__(self, id: int = None, email: str = None, wrong_password: bool = False, user_exists: bool = False):
-        print('from excep', id, email, wrong_password)
         if id:
             super().__init__(
                 status_code=404,

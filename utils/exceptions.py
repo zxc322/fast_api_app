@@ -1,4 +1,6 @@
 from starlette.exceptions import HTTPException
+from fastapi import status, HTTPException as fastapiException
+from schemas.user import UserRsposneId
 
 class CustomError(HTTPException):
     def __init__(self, id: int = None, email: str = None, wrong_password: bool = False, user_exists: bool = False):
@@ -22,3 +24,21 @@ class CustomError(HTTPException):
                 status_code=400,
                 detail="User with this email already exists in the system."
                 )
+
+credentials_exception = fastapiException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+permission_denied = fastapiException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="You don't perrmissions for this action."
+    )
+
+
+def permission_validator(id: int, user: UserRsposneId):
+    if isinstance(user, dict):
+        raise credentials_exception        
+    if user.id != id:
+        raise permission_denied

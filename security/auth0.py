@@ -37,8 +37,7 @@ class VerifyToken:
         except jwt.exceptions.PyJWKClientError as error:
             return {"status": "error", "msg": error.__str__()}
         except jwt.exceptions.DecodeError as error:
-            return {"status": "error", "msg": error.__str__()}
-        print('kidOK')    
+            return {"status": "error", "msg": error.__str__()}   
 
         try: 
             payload = jwt.decode(

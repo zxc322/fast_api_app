@@ -9,6 +9,7 @@ from schemas.token import TokenData
 from schemas.user import User, UserRsposneId
 from settings import config
 from security.auth0 import VerifyToken
+from utils.exceptions import credentials_exception
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -22,11 +23,6 @@ def verify_password(plain_password, hashed_password):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
-credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
 
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
@@ -58,7 +54,6 @@ async def get_current_user(crud, token) -> UserRsposneId:
         try:
             instanse = VerifyToken(token.credentials, crud=crud)
             result = await instanse.verify()
-            print(result)
             return result
         except:
             raise credentials_exception

@@ -1,13 +1,14 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 import json
 
-from schemas.user import User, UserCreate, UpdateUser, Users, UserRsposneId
+from schemas.user import PublicUser, User, UserCreate, UpdateUser, Users, UserRsposneId
 from db.models import user as DBUser
 from repositories.user import UserCRUD
 from repositories.service import Log
 from fastapi.encoders import jsonable_encoder
 from utils.exceptions import CustomError
-
+from utils.exceptions import credentials_exception, permission_denied, permission_validator
+from endpoints.auth import read_users_me
 
 router = APIRouter()
 
@@ -29,26 +30,23 @@ async def create_user(user_in: UserCreate) :
 
     return response_user
 
-@router.get('/{id}', response_model=User)
-async def get_user_by_id(id: int) -> User:    
+@router.get('/{id}', response_model=PublicUser)
+async def get_user_by_id(id: int) -> PublicUser:    
     crud = UserCRUD(db_user=DBUser)
     user = await crud.get_by_id(id=id)
     return user
 
 @router.put("/{id}", response_model=UserRsposneId, status_code=201)
-async def update_user(id: int, user_in: UpdateUser) -> User:
+async def update_user(id: int, user_in: UpdateUser, user = Depends(read_users_me)) -> User:
+    permission_validator(id=id, user=user)
     crud = UserCRUD(db_user=DBUser)
     user = await crud.get_by_id(id=id)
-    if not user:
-        raise CustomError(id=id) 
     return await crud.update(id=id, user_in=user_in)
 
 @router.delete('/{id}', response_model=UserRsposneId)
-async def remove_user(id: int) -> UserRsposneId:        
+async def remove_user(id: int = id, user = Depends(read_users_me)) -> UserRsposneId:
+    permission_validator(id=id, user=user)        
     crud = UserCRUD(db_user=DBUser)
-    user = await crud.get_by_id(id=id)
-    if not user:
-        raise CustomError(id=id)
     return await crud.remove(id=id)
 
 

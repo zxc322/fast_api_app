@@ -4,20 +4,22 @@ from datetime import date
 from typing import List, Dict
 
 
-class User(BaseModel):
+class PublicUser(BaseModel):
     id: int
     username: str
-    email: EmailStr
-    password: str
     about_me: Optional[str]
     is_active: bool
-    is_admin: bool
     created_at: date
-    updated_at: date
-    updated_by: Optional[int]
 
     class Config:
         orm_mode = True
+
+class User(PublicUser):
+    email: EmailStr
+    password: str
+    is_admin: bool
+    updated_at: date
+    updated_by: Optional[int]
 
 class UserRsposneId(BaseModel):
     id : int
@@ -50,7 +52,7 @@ class UpdateUser(BaseModel):
 
 
 class Users(BaseModel):
-    users: List[User] = []
+    users: List[PublicUser] = []
     pagination: Dict
 
 

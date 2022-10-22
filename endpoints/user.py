@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=UserRsposneId, status_code=201)
-async def create_user(user_in: UserCreate) :
+async def create_user(user_in: UserCreate) -> UserRsposneId:
     crud = UserCRUD(db_user=DBUser)
     
     response_user = await crud.get_by_email(email=user_in.email)
@@ -37,7 +37,7 @@ async def get_user_by_id(id: int) -> PublicUser:
     return user
 
 @router.put("/{id}", response_model=UserRsposneId, status_code=201)
-async def update_user(id: int, user_in: UpdateUser, user = Depends(read_users_me)) -> User:
+async def update_user(id: int, user_in: UpdateUser, user = Depends(read_users_me)) -> UserRsposneId:
     permission_validator(id=id, user=user)
     crud = UserCRUD(db_user=DBUser)
     user = await crud.get_by_id(id=id)

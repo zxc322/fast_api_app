@@ -18,11 +18,11 @@ class UserCRUD:
         self.db_user = db_user
     
     async def get_by_email(self, email) -> Optional[User]:
-        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.email == email))
+        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.email == email, self.db_user.c.deleted_at == None))
         return User(**user) if user else None
     
     async def get_by_id(self, id: int) -> User:
-        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id))
+        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id, self.db_user.c.deleted_at == None))
         if not user:
             raise CustomError(id=id)
         return User(**user)
@@ -52,7 +52,8 @@ class UserCRUD:
         return {'id': id}   
 
     async def remove(self, id: int) -> UserRsposneId:
-        u = self.db_user.delete().where(self.db_user.c.id==id)
+        # u = self.db_user.delete().where(self.db_user.c.id==id)
+        u = self.db_user.update().values(deleted_at=datetime.utcnow()).where(self.db_user.c.id==id)
         await database.execute(u)
         return UserRsposneId(id=id)
 
@@ -63,11 +64,11 @@ class UserCRUD:
         skip = (page-1) * limit
         end = skip + limit
 
-        users_on_page = self.db_user.select().offset(skip).limit(limit)
-        total_users =  self.db_user.select()
+        users_on_page = self.db_user.select().where(self.db_user.c.deleted_at == None).offset(skip).limit(limit)
+        total_users =  self.db_user.select().where(self.db_user.c.deleted_at == None)
         count = len(await database.fetch_all(total_users))
         
-        queryset = await database.fetch_all(users_on_page) 
+        queryset = await database.fetch_all(users_on_page)
         total_pages = math.ceil(count/limit)
 
         users = [dict(result) for result in queryset]

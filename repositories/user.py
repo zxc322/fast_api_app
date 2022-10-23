@@ -6,7 +6,7 @@ from db.connection import database
 from datetime import datetime
 
 from db.models import user as DBUser
-from schemas.user import UserCreate, User, Users, UserRsposneId
+from schemas.user import UserCreate, User, Users, UserRsposneId, UpdateUser
 from security.auth import get_password_hash
 from repositories.service import Log, paginate_data
 from utils.exceptions import CustomError
@@ -39,22 +39,22 @@ class UserCRUD:
             created_at=now,
             updated_at=now
         )      
-        new_user_id = {'id': await database.execute(user)}
-        return UserRsposneId(**new_user_id)
+        #new_user_id = {'id': await database.execute(user)}
+        return UserRsposneId(id=await database.execute(user))
 
 
-    async def update(self, id: int, user_in: dict) -> UserRsposneId:
+    async def update(self, id: int, user_in: UpdateUser) -> UserRsposneId:
         now = datetime.utcnow()     
         updated_data = user_in.dict(skip_defaults=True)
         updated_data['updated_at'] = now
+        if updated_data.get('password'):
+            updated_data['password'] = get_password_hash(updated_data['password'])
         u = self.db_user.update().values(updated_data).where(self.db_user.c.id==id)
         await database.execute(u)
-        return {'id': id}   
+        return UserRsposneId(id=id)
 
     async def remove(self, id: int) -> UserRsposneId:
         user = await self.get_by_id(id=id)
-        email = user.email
-        print('lll', email)
         u = self.db_user.update().values(deleted_at=datetime.utcnow(), email='[REMOVED] ' + user.email).where(self.db_user.c.id==id)
         await database.execute(u)
         return UserRsposneId(id=id)

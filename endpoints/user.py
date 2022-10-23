@@ -7,7 +7,7 @@ from repositories.user import UserCRUD
 from repositories.service import Log
 from fastapi.encoders import jsonable_encoder
 from utils.exceptions import CustomError
-from utils.exceptions import credentials_exception, permission_denied, permission_validator
+from utils.permissions import Permissions
 from endpoints.auth import read_users_me
 
 router = APIRouter()
@@ -38,14 +38,14 @@ async def get_user_by_id(id: int) -> PublicUser:
 
 @router.put("/{id}", response_model=UserRsposneId, status_code=201)
 async def update_user(id: int, user_in: UpdateUser, user = Depends(read_users_me)) -> UserRsposneId:
-    permission_validator(id=id, user=user)
+    await Permissions(user=user).permission_validator_for_user(id=id)
     crud = UserCRUD(db_user=DBUser)
     user = await crud.get_by_id(id=id)
     return await crud.update(id=id, user_in=user_in)
 
 @router.delete('/{id}', response_model=UserRsposneId)
 async def remove_user(id: int = id, user = Depends(read_users_me)) -> UserRsposneId:
-    permission_validator(id=id, user=user)        
+    await Permissions(user=user).permission_validator_for_user(id=id)     
     crud = UserCRUD(db_user=DBUser)
     return await crud.remove(id=id)
 

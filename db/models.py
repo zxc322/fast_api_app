@@ -20,8 +20,24 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = Column(DateTime, default=None, nullable=True)
 
+    company = relationship("Company")
     updated_by = Column(Integer, nullable=True)  
 
 
-user = User.__table__
+class Company(Base):
+    __tablename__ = 'companies'
 
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    description = Column(String(555), nullable=True)
+    visible = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = Column(DateTime, default=None, nullable=True)
+
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="company")
+
+
+user = User.__table__
+company = Company.__table__

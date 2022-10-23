@@ -52,8 +52,10 @@ class UserCRUD:
         return {'id': id}   
 
     async def remove(self, id: int) -> UserRsposneId:
-        # u = self.db_user.delete().where(self.db_user.c.id==id)
-        u = self.db_user.update().values(deleted_at=datetime.utcnow()).where(self.db_user.c.id==id)
+        user = await self.get_by_id(id=id)
+        email = user.email
+        print('lll', email)
+        u = self.db_user.update().values(deleted_at=datetime.utcnow(), email='[REMOVED] ' + user.email).where(self.db_user.c.id==id)
         await database.execute(u)
         return UserRsposneId(id=id)
 

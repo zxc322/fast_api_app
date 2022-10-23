@@ -19,7 +19,8 @@ class CustomError(HTTPException):
         wrong_password: bool = False, 
         user_exists: bool = False, 
         company_exists: bool = False,
-        company_id: int = None):
+        company_id: int = None,
+        wrong_member_id: bool = False):
 
         if id:
             super().__init__(
@@ -50,4 +51,9 @@ class CustomError(HTTPException):
             super().__init__(
                 status_code=404,
                 detail="Company with id {} doesn't exists.".format(company_id)
+                )
+        elif wrong_member_id:
+            super().__init__(
+                status_code=404,
+                detail="Data was't found"
                 )

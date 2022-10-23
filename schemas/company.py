@@ -35,5 +35,5 @@ class UpdateCompany(BaseModel):
     visible: Optional[bool]
 
 class Companies(BaseModel):
-    users: List[PublicCompany] = []
+    companies: List[PublicCompany] = []
     pagination: Dict

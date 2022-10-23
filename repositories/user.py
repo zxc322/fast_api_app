@@ -1,6 +1,4 @@
-from typing import Optional, Union
-from sqlalchemy.orm import Session
-from typing import Dict
+from typing import Optional
 import math
 from db.connection import database
 from datetime import datetime
@@ -8,7 +6,7 @@ from datetime import datetime
 from db.models import user as DBUser
 from schemas.user import UserCreate, User, Users, UserRsposneId, UpdateUser
 from security.auth import get_password_hash
-from repositories.service import Log, paginate_data
+from repositories.service import paginate_data
 from utils.exceptions import CustomError
 
 
@@ -39,7 +37,6 @@ class UserCRUD:
             created_at=now,
             updated_at=now
         )      
-        #new_user_id = {'id': await database.execute(user)}
         return UserRsposneId(id=await database.execute(user))
 
 
@@ -55,7 +52,9 @@ class UserCRUD:
 
     async def remove(self, id: int) -> UserRsposneId:
         user = await self.get_by_id(id=id)
-        u = self.db_user.update().values(deleted_at=datetime.utcnow(), email='[REMOVED] ' + user.email).where(self.db_user.c.id==id)
+        now = datetime.utcnow()
+        deleted_data = {'deleted_at':now, 'email': '[REMOVED] ' + user.email, 'updated_at': now}
+        u = self.db_user.update().values(deleted_data).where(self.db_user.c.id==id)
         await database.execute(u)
         return UserRsposneId(id=id)
 
@@ -74,7 +73,7 @@ class UserCRUD:
         total_pages = math.ceil(count/limit)
 
         users = [dict(result) for result in queryset]
-        pagination = await paginate_data(page, count, total_pages, end, limit)
+        pagination = await paginate_data(page, count, total_pages, end, limit, url='users')
         return Users(users=users, pagination=pagination)
 
 

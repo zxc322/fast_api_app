@@ -1,13 +1,8 @@
 from fastapi import APIRouter, Depends
-import json
 
-#from schemas.user import PublicUser, User, UserCreate, UpdateUser, Users, UserRsposneId
 from schemas.company import CreateCompany, ResponseCompanyId, UpdateCompany, Companies
-from db.models import user as DBUser, company as DBCompany
-#from repositories.user import UserCRUD
+from db.models import company as DBCompany
 from repositories.company import CompanyCRUD
-from repositories.service import Log
-from fastapi.encoders import jsonable_encoder
 from utils.exceptions import CustomError
 from utils.permissions import Permissions
 from endpoints.auth import read_users_me

@@ -1,14 +1,11 @@
-from typing import Optional, Union
-from sqlalchemy.orm import Session
-from typing import Dict
+from typing import Optional
 import math
 from db.connection import database
 from datetime import datetime
 
-from db.models import user as DBUser, company as DBCompany
+from db.models import company as DBCompany
 from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies
-from security.auth import get_password_hash
-from repositories.service import Log, paginate_data
+from repositories.service import paginate_data
 from utils.exceptions import CustomError
 
 
@@ -55,7 +52,9 @@ class CompanyCRUD:
 
     async def remove(self, id: int) -> ResponseCompanyId:
         company = await self.get_by_id(id=id)
-        u = self.db_company.update().values(deleted_at=datetime.utcnow(), name='[REMOVED] ' + company.name).where(self.db_company.c.id==id)
+        now = datetime.utcnow()
+        deleted_data = {'deleted_at': now, 'name': '[REMOVED] ' + company.name, 'updated_at': now}
+        u = self.db_company.update().values(deleted_data).where(self.db_company.c.id==id)
         await database.execute(u)
         return ResponseCompanyId(id=id)
 
@@ -66,15 +65,17 @@ class CompanyCRUD:
         skip = (page-1) * limit
         end = skip + limit
 
-        users_on_page = self.db_company.select().where(self.db_company.c.deleted_at == None).offset(skip).limit(limit)
-        total_users =  self.db_company.select().where(self.db_company.c.deleted_at == None)
-        count = len(await database.fetch_all(total_users))
+        companies_on_page = self.db_company.select().where(
+            self.db_company.c.deleted_at == None,
+            self.db_company.c.visible == True).offset(skip).limit(limit)
+        total_companies =  self.db_company.select().where(self.db_company.c.deleted_at == None)
+        count = len(await database.fetch_all(total_companies))
         
-        queryset = await database.fetch_all(users_on_page)
+        queryset = await database.fetch_all(companies_on_page)
         total_pages = math.ceil(count/limit)
 
-        users = [dict(result) for result in queryset]
-        pagination = await paginate_data(page, count, total_pages, end, limit)
-        return Companies(users=users, pagination=pagination)
+        companies = [dict(result) for result in queryset]
+        pagination = await paginate_data(page, count, total_pages, end, limit, url='company')
+        return Companies(companies=companies, pagination=pagination)
 
         

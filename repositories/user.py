@@ -3,7 +3,7 @@ import math
 from db.connection import database
 from datetime import datetime
 
-from db.models import user as DBUser
+from db.models import users as DBUser
 from schemas.user import UserCreate, User, Users, UserRsposneId, UpdateUser
 from security.auth import get_password_hash
 from repositories.service import paginate_data

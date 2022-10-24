@@ -3,10 +3,12 @@ import math
 from db.connection import database
 from datetime import datetime
 
-from db.models import company as DBCompany
+from db.models import companies as DBCompany
 from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies
 from repositories.service import paginate_data
 from utils.exceptions import CustomError
+from repositories.sql_queries import GenerateSQL
+from sqlalchemy import text
 
 
 class CompanyCRUD:
@@ -65,17 +67,10 @@ class CompanyCRUD:
         skip = (page-1) * limit
         end = skip + limit
 
-        companies_on_page = self.db_company.select().where(
-            self.db_company.c.deleted_at == None,
-            self.db_company.c.visible == True).offset(skip).limit(limit)
-        total_companies =  self.db_company.select().where(self.db_company.c.deleted_at == None)
-        count = len(await database.fetch_all(total_companies))
-        
-        queryset = await database.fetch_all(companies_on_page)
+        companies_instance = GenerateSQL(offset=skip, limit=limit)
+        companies = await database.fetch_all(text(await companies_instance.all_companies()))
+        count = await database.fetch_one(text(await companies_instance.companies_counter()))
+        count = count.total_companies
         total_pages = math.ceil(count/limit)
-
-        companies = [dict(result) for result in queryset]
         pagination = await paginate_data(page, count, total_pages, end, limit, url='company')
         return Companies(companies=companies, pagination=pagination)
-
-        

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 import json
 
 from schemas.user import PublicUser, User, UserCreate, UpdateUser, Users, UserRsposneId
-from db.models import user as DBUser
+from db.models import users as DBUser
 from repositories.user import UserCRUD
 from repositories.service import Log
 from fastapi.encoders import jsonable_encoder

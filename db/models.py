@@ -51,6 +51,7 @@ class CompanyMembers(Base):
     requested = Column(DateTime, nullable=True, default=None)
     ignored_by_user = Column(Boolean, default=False)
     ignored_by_owner = Column(Boolean, default=False)
+    is_company_admin = Column(Boolean, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -63,6 +64,7 @@ class CompanyMembers(Base):
 
 
 
-user = User.__table__
-company = Company.__table__
+
+users = User.__table__
+companies = Company.__table__
 company_members = CompanyMembers.__table__

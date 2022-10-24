@@ -4,11 +4,12 @@ from datetime import date
 from typing import List, Dict
 
 class PublicCompany(BaseModel):
-    id: int
-    name: str
+    company_id: int
+    company_name: str
     description: Optional[str]
     created_at: date
     owner_id: int
+    owner_usename: str
 
     class Config:
         orm_mode = True

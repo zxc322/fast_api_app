@@ -16,9 +16,12 @@ class ResponseMessage(BaseModel):
 
 
 class PublicInvite(BaseModel):
-    id: int
+    member_id: int
     invited: date
-    company: PublicCompany
+    company_id: int
+    company_name: str
+    company_description: str
+    owner_id: int
 
 
 class MyInvites(BaseModel):
@@ -29,13 +32,17 @@ class MyInvites(BaseModel):
         orm_mode = True
 
 class UserInCompany(BaseModel):
-    id: int
+    member_id: int
+    company_id: int
+    company_name: str
     active_member_from: date
-    user: PublicUser
+    is_company_admin: bool
+    user_id: int
+    username: str
 
 class UsersListInCompany(BaseModel):
     users: List[UserInCompany]
-    pagination: Dict
+
 
 
 class CompanyMemberModel(BaseModel):
@@ -53,3 +60,6 @@ class CompanyMemberModel(BaseModel):
 class AcceptDecline(BaseModel):
     id: int
 
+
+class ProvideAdminStatus(Invite):
+    pass

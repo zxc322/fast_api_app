@@ -21,12 +21,12 @@ class Permissions:
         if self.user.id != id:
             raise permission_denied
 
-    async def permission_validator_for_company(self, id: int, company: Company):
+    async def permission_validator_for_company_owner(self, company: Company):
         await self.validate_token()
         if self.user.id != company.owner_id:
             raise permission_denied
 
-    async def permission_validator_for_member(self, member: CompanyMemberModel):
+    async def permission_validator_for_company_member(self, member: CompanyMemberModel):
         await self.validate_token()
         if self.user.id != member.member_id:
             raise permission_denied

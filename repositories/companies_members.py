@@ -4,13 +4,12 @@ from db.connection import database
 from datetime import datetime
 
 from db.models import company_members as DBCompany_members, users as DBUser, companies as DBCompany
-from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies
 from schemas.companies_members import Invite, ResponseMessage, MyInvites, CompanyMemberModel, UsersListInCompany
 from repositories.service import paginate_data
 from utils.exceptions import CustomError
 from repositories.user import UserCRUD
-from sqlalchemy import text
-from repositories.sql_queries import GenerateSQL 
+from sqlalchemy import select, func
+
 
 class CompanyMemberCRUD:
 
@@ -39,7 +38,7 @@ class CompanyMemberCRUD:
                 is_company_admin=False,
                 invited=now,
                 created_at=now,
-                updated_at=now,
+                updated_at=now
             )
             await database.execute(invitation)
             return ResponseMessage(message='Invitation have been sent.')
@@ -48,20 +47,39 @@ class CompanyMemberCRUD:
         elif relation.ignored_by_user:
             return ResponseMessage(message='This user blocked invited from your company :(')
 
+
     async def my_invites(self, user_id: int, page: int = 1, limit: int = 10) -> MyInvites:
         if page<1:
                 page = 1
         skip = (page-1) * limit
         end = skip + limit
-        invites_instance = GenerateSQL(user_id=user_id, offset=skip, limit=limit)
-        invites = await invites_instance.my_invites()
-        my_invites = await database.fetch_all(text(invites))
-        count_query = await invites_instance.invites_counter()
-        count = await database.fetch_one(text(count_query))
+
+        companies_query = select(DBCompany.c.id.label('company_id'),
+            DBCompany.c.name.label('company_name'),
+            DBCompany.c.description.label('company_description'),
+            DBCompany.c.owner_id.label('owner_id')
+            ).subquery()
+
+        query = select(self.db_company_members.c.id.label('member_id'), 
+            self.db_company_members.c.invited,
+            companies_query).select_from(
+                self.db_company_members.join(companies_query)).where(
+                    self.db_company_members.c.member_id==user_id,
+                    self.db_company_members.c.invited!=None
+                ).limit(limit).offset(skip)
+        
+        count_query = select([func.count().label('total_invites')]).select_from(self.db_company_members).where(
+            self.db_company_members.c.member_id==user_id,
+                    self.db_company_members.c.invited!=None
+        )
+
+        my_invites = await database.fetch_all(query=query)
+        count = await database.fetch_one(count_query)
         count = count.total_invites
         total_pages = math.ceil(count/limit)
         pagination = await paginate_data(page, count, total_pages, end, limit, url='company_members/my_invites')
         return MyInvites(invites=my_invites, pagination=pagination)
+
 
 
     async def accept_invite(self, id: int, member) -> ResponseMessage:
@@ -106,8 +124,22 @@ class CompanyMemberCRUD:
                         self.db_company_members.c.member_id==user_id))
                     if not member.is_company_admin:
                         return ResponseMessage(message="Company is private!")
-        query = await GenerateSQL(company_id=company_id).users_from_company()            
-        users = await database.fetch_all(text(query))
+           
+        
+        users_query = select(DBUser.c.id.label('user_id'),
+            DBUser.c.username).subquery()
+
+        query = select(self.db_company_members.c.id.label('member_id'),
+            self.db_company_members.c.active_member.label('active_member_from'),
+            self.db_company_members.c.company_id.label('company_id'),
+            self.db_company_members.c.is_company_admin,
+            users_query).select_from(
+            self.db_company_members.join(users_query)).where(
+                self.db_company_members.c.active_member!=None,
+                self.db_company_members.c.company_id==company_id
+            )
+     
+        users = await database.fetch_all(query=query)
         return UsersListInCompany(users=users)
 
     
@@ -157,7 +189,7 @@ class CompanyMemberCRUD:
         if not await database.execute(DBCompany.select().where(DBCompany.c.id==company_id)):
             return ResponseMessage(message='Company was not found.')
         now = datetime.utcnow()
-        updated_data={'requested': now, 'updated_at': now, 'created_at': now, 'company_id': company_id, 'member_id': user_id}
+        updated_data={'requested': now, 'updated_at': now, 'created_at': now, 'company_id': company_id, 'member_id': user_id, 'is_company_admin': False}
         if await database.execute(self.db_company_members.insert().values(updated_data)):
             return ResponseMessage(message='Request was sent successfully.')
 

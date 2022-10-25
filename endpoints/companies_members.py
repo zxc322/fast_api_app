@@ -5,7 +5,6 @@ from schemas.company import Companies
 from db.models import company_members as DBCompany_members, companies as DBCompany
 from repositories.companies_members import CompanyMemberCRUD
 from repositories.company import CompanyCRUD
-from utils.exceptions import CustomError
 from utils.permissions import Permissions
 from endpoints.auth import read_users_me
 

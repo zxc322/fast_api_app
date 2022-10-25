@@ -34,9 +34,8 @@ class MyInvites(BaseModel):
 class UserInCompany(BaseModel):
     member_id: int
     company_id: int
-    company_name: str
     active_member_from: date
-    is_company_admin: bool
+    is_company_admin: Optional[bool] = False
     user_id: int
     username: str
 

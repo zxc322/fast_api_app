@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer
 from schemas.token import Token
 from schemas.user import UserRsposneId, UserSignIn, User
 from security import auth 
-from db.models import user as DBUser
+from db.models import users as DBUser
 from repositories.user import UserCRUD
 from utils.exceptions import CustomError
 from settings import config

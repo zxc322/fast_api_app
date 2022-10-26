@@ -1,14 +1,12 @@
-from typing import Optional, Union
-from sqlalchemy.orm import Session
-from typing import Dict
+from typing import Optional
 import math
 from db.connection import database
 from datetime import datetime
 
-from db.models import user as DBUser
-from schemas.user import UserCreate, User, Users, UserRsposneId
+from db.models import users as DBUser
+from schemas.user import UserCreate, User, Users, UserRsposneId, UpdateUser
 from security.auth import get_password_hash
-from repositories.service import Log, paginate_data
+from repositories.service import paginate_data
 from utils.exceptions import CustomError
 
 
@@ -18,11 +16,11 @@ class UserCRUD:
         self.db_user = db_user
     
     async def get_by_email(self, email) -> Optional[User]:
-        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.email == email))
+        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.email == email, self.db_user.c.deleted_at == None))
         return User(**user) if user else None
     
     async def get_by_id(self, id: int) -> User:
-        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id))
+        user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id, self.db_user.c.deleted_at == None))
         if not user:
             raise CustomError(id=id)
         return User(**user)
@@ -39,20 +37,24 @@ class UserCRUD:
             created_at=now,
             updated_at=now
         )      
-        new_user_id = {'id': await database.execute(user)}
-        return UserRsposneId(**new_user_id)
+        return UserRsposneId(id=await database.execute(user))
 
 
-    async def update(self, id: int, user_in: dict) -> UserRsposneId:
+    async def update(self, id: int, user_in: UpdateUser) -> UserRsposneId:
         now = datetime.utcnow()     
         updated_data = user_in.dict(skip_defaults=True)
         updated_data['updated_at'] = now
+        if updated_data.get('password'):
+            updated_data['password'] = get_password_hash(updated_data['password'])
         u = self.db_user.update().values(updated_data).where(self.db_user.c.id==id)
         await database.execute(u)
-        return {'id': id}   
+        return UserRsposneId(id=id)
 
     async def remove(self, id: int) -> UserRsposneId:
-        u = self.db_user.delete().where(self.db_user.c.id==id)
+        user = await self.get_by_id(id=id)
+        now = datetime.utcnow()
+        deleted_data = {'deleted_at':now, 'email': '[REMOVED] ' + user.email, 'updated_at': now}
+        u = self.db_user.update().values(deleted_data).where(self.db_user.c.id==id)
         await database.execute(u)
         return UserRsposneId(id=id)
 
@@ -63,15 +65,15 @@ class UserCRUD:
         skip = (page-1) * limit
         end = skip + limit
 
-        users_on_page = self.db_user.select().offset(skip).limit(limit)
-        total_users =  self.db_user.select()
+        users_on_page = self.db_user.select().where(self.db_user.c.deleted_at == None).offset(skip).limit(limit)
+        total_users =  self.db_user.select().where(self.db_user.c.deleted_at == None)
         count = len(await database.fetch_all(total_users))
         
-        queryset = await database.fetch_all(users_on_page) 
+        queryset = await database.fetch_all(users_on_page)
         total_pages = math.ceil(count/limit)
 
         users = [dict(result) for result in queryset]
-        pagination = await paginate_data(page, count, total_pages, end, limit)
+        pagination = await paginate_data(page, count, total_pages, end, limit, url='users')
         return Users(users=users, pagination=pagination)
 
 

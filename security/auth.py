@@ -58,8 +58,7 @@ async def get_current_user(crud, token) -> UserRsposneId:
         except:
             raise credentials_exception
     user = await crud.get_by_email(email=token_data.email)
-    user_id = {'id': user.id}
     if user is None:
         raise credentials_exception
-    return UserRsposneId(**user_id)
+    return UserRsposneId(id=user.id)
 

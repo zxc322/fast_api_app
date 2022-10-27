@@ -139,4 +139,4 @@ class QuizCRUD:
     
         total_pages = math.ceil(count.zxc/limit)
         pagination = await paginate_data(page, count.zxc, total_pages, end, limit, url='quiz/company')
-        return CompaniesQuiezes(quizes=quizes, pagination=pagination or {})
+        return CompaniesQuiezes(quizes=quizes, pagination=pagination)

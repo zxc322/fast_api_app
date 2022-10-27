@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 import json
 
-from schemas.quiz import UpdateQuestion, AppendOption, AppendQuestion, CreateQuiz, CheckQuiz, QuizResponseMessage, ResponseId, UpdateOption
+from schemas.quiz import CompaniesQuiezes, UpdateQuestion, AppendOption, AppendQuestion, CreateQuiz, QuizResponseMessage, ResponseId, UpdateOption
 from repositories.quiz import QuizCRUD
 from repositories.company import CompanyCRUD
 from repositories.companies_members import CompanyMemberCRUD
@@ -88,7 +88,7 @@ async def delete_option(id: int, user = Depends(read_users_me)) -> ResponseId:
     return await crud.delete_question(question=question_)
 
 
-@router.get('/company/{id}')#, response_model=ResponseId)
-async def delete_option(id: int, page: int = 1, limit: int = 10) -> ResponseId:
+@router.get('/company/{id}', response_model=CompaniesQuiezes)
+async def delete_option(id: int, page: int = 1, limit: int = 10) -> CompaniesQuiezes:
     crud = QuizCRUD(db_quiz=DBQuiz, db_question=DBQuestion, db_option=DBOption)         
     return await crud.get_quiz_list(company_id=id, page=page, limit=limit)

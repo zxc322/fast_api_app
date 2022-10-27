@@ -4,7 +4,7 @@ from db.connection import database
 from datetime import datetime
 
 from db.models import companies as DBCompany, users as DBUser
-from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies
+from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies, ReturnCompany
 from repositories.service import paginate_data
 from utils.exceptions import CustomError
 from sqlalchemy import select, func
@@ -15,19 +15,21 @@ class CompanyCRUD:
     def __init__(self, db_company: DBCompany = None):
         self.db_company = db_company
     
-    async def get_by_name(self, name: str) -> Optional[PublicCompany]:
+    async def get_by_name(self, name: str) -> Optional[ReturnCompany]:
         company = await database.fetch_one(self.db_company.select().where(
             self.db_company.c.name == name,
             self.db_company.c.deleted_at == None))
-        return PublicCompany(**company) if company else None
+        return ReturnCompany(**company) if company else None
 
-    async def get_by_id(self, id: int) -> Company:
+    async def get_by_id(self, id: int) -> ReturnCompany:
         company = await database.fetch_one(self.db_company.select().where(
             self.db_company.c.id == id,
             self.db_company.c.deleted_at == None))
         if not company:
+            if not id:
+                id = '0'
             raise CustomError(company_id=id)
-        return Company(**company)
+        return ReturnCompany(**company)
 
     async def create(self, company_in: CreateCompany, owner: int) -> ResponseCompanyId:
         now = datetime.utcnow()

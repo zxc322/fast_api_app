@@ -40,6 +40,7 @@ class Company(Base):
 
     owner = relationship("User", back_populates="company")
     company_relation = relationship("CompanyMembers")
+    quiz = relationship("Quiz", cascade="all, delete")
 
 
 class CompanyMembers(Base):
@@ -55,6 +56,7 @@ class CompanyMembers(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
 
     company_id = Column(Integer, ForeignKey("companies.id"))
     member_id = Column(Integer, ForeignKey("users.id"))
@@ -63,8 +65,51 @@ class CompanyMembers(Base):
     member = relationship("User", back_populates="members")
 
 
+class Quiz(Base):
+    __tablename__ = 'quiz'
 
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    description = Column(String, nullable=True)
+    frequency = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = Column(DateTime, default=None, nullable=True)
+        
+    company_id = Column(Integer, ForeignKey("companies.id"))
+
+    question = relationship("Question")
+    company = relationship("Company", back_populates="quiz")
+
+class Question(Base):
+    __tablename__ = 'question'
+
+    id = Column(Integer, primary_key=True, index=True)
+    question = Column(String)
+    deleted_at = Column(DateTime, default=None, nullable=True)
+
+    quiz_id = Column(Integer, ForeignKey("quiz.id"))
+
+    quiz = relationship("Quiz", back_populates="question")
+    option = relationship("Option", cascade="all, delete")
+    
+
+class Option(Base):
+    __tablename__ = 'option'
+
+    id = Column(Integer, primary_key=True, index=True)
+    option = Column(String)
+    is_right = Column(Boolean, default=False)
+
+    question_id = Column(Integer, ForeignKey("question.id"))
+    question = relationship("Question", back_populates="option")
+
+
+    
 
 users = User.__table__
 companies = Company.__table__
 company_members = CompanyMembers.__table__
+quiz = Quiz.__table__
+question = Question.__table__
+option = Option.__table__

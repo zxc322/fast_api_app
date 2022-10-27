@@ -3,6 +3,16 @@ from typing import Optional
 from datetime import date
 from typing import List, Dict
 
+
+class ReturnCompany(BaseModel):
+    id: int
+    name: str
+    description: str
+    visible: bool
+    created_at: date
+    updated_at: date
+    owner_id: int
+
 class PublicCompany(BaseModel):
     company_id: int
     company_name: str

@@ -6,7 +6,7 @@ from datetime import datetime
 from db.models import company_members as DBCompany_members, users as DBUser, companies as DBCompany
 from schemas.companies_members import Invite, ResponseMessage, MyInvites, CompanyMemberModel, UsersListInCompany
 from repositories.service import paginate_data
-from utils.exceptions import CustomError
+from utils.exceptions import CustomError, MyExceptions
 from repositories.user import UserCRUD
 from sqlalchemy import select, func
 
@@ -15,12 +15,23 @@ class CompanyMemberCRUD:
 
     def __init__(self, db_company_members: DBCompany_members = None):
         self.db_company_members = db_company_members
+        self.exception = MyExceptions
 
     async def get_by_id(self, id: int) -> CompanyMemberModel:
         response = await database.fetch_one(self.db_company_members.select().where(self.db_company_members.c.id==id))
         if not response:
             raise CustomError(wrong_member_id=True)
-        return CompanyMemberModel(**response)   
+        return CompanyMemberModel(**response)  
+
+
+    async def is_company_admin(self, user_id: int, company_id: int) -> bool:
+        member = await database.fetch_one(self.db_company_members.select().where(
+            self.db_company_members.c.member_id==user_id,
+            self.db_company_members.c.company_id==company_id,
+            ))
+        if not member or not member.is_company_admin:
+            return False
+        return True
 
     async def invite_member(self, invite: Invite) -> ResponseMessage:
         relation = await database.fetch_one(self.db_company_members.select().where(
@@ -30,7 +41,7 @@ class CompanyMemberCRUD:
 
         if not relation:
             # chek if user exists
-            await UserCRUD(db_user=DBUser).get_by_id(id=invite.user_id)
+            user =await UserCRUD(db_user=DBUser).get_by_id(id=invite.user_id)
 
             invitation = self.db_company_members.insert().values(
                 company_id=invite.company_id,
@@ -43,9 +54,9 @@ class CompanyMemberCRUD:
             await database.execute(invitation)
             return ResponseMessage(message='Invitation have been sent.')
         elif relation.invited:
-            return ResponseMessage(message='This user invitated already.')
+            raise await self.exception().invited_already()
         elif relation.ignored_by_user:
-            return ResponseMessage(message='This user blocked invited from your company :(')
+            raise await self.exception().blocked()
 
 
     async def my_invites(self, user_id: int, page: int = 1, limit: int = 10) -> MyInvites:
@@ -84,7 +95,7 @@ class CompanyMemberCRUD:
 
     async def accept_invite(self, id: int, member) -> ResponseMessage:
         if member.active_member:
-            return ResponseMessage(message='You are an avtive member of this company already')
+            raise await self.exception().active_already()
         now = datetime.utcnow()
         accept_fields = {'invited': None, 'active_member': now, 'updated_at': now}
         await database.execute(
@@ -95,8 +106,7 @@ class CompanyMemberCRUD:
     
     async def decline_invite(self, id: int, member) -> ResponseMessage:
         if member.active_member:
-            return ResponseMessage(message='You are an avtive member of this company already')
-        now = datetime.utcnow()
+            raise await self.exception().active_already()
         await database.execute(
             self.db_company_members.delete().where(self.db_company_members.c.id==id)
         )
@@ -105,9 +115,9 @@ class CompanyMemberCRUD:
 
     async def ignore_invite(self, id: int, member) -> ResponseMessage:
         if member.active_member:
-            return ResponseMessage(message='You are an avtive member of this company already')
+            raise await self.exception().active_already()
         now = datetime.utcnow()
-        accept_fields = {'invited': None, 'ignored_by_owner': True, 'updated_at': now}
+        accept_fields = {'invited': None, 'ignored_by_user': True, 'updated_at': now}
         await database.execute(
             self.db_company_members.update().values(accept_fields).where(self.db_company_members.c.id==id)
         )
@@ -150,9 +160,9 @@ class CompanyMemberCRUD:
             self.db_company_members.c.company_id==company_id))
 
         if not member or not member.active_member:
-            return ResponseMessage(message='This user is not active member yet.')
+            raise await self.exception().not_active_yet()
         if member.is_company_admin:
-            return ResponseMessage(message='This user is admin already.')
+            raise await self.exception().is_admin_already()
         updated_data={'is_company_admin': True, 'updated_at': datetime.utcnow()}
         await database.execute(self.db_company_members.update().values(updated_data).where(
             self.db_company_members.c.company_id==company_id,
@@ -167,9 +177,9 @@ class CompanyMemberCRUD:
             self.db_company_members.c.company_id==company_id))
 
         if not member or not member.active_member:
-            return ResponseMessage(message='This user is not active member yet.')
+            raise await self.exception().not_active_yet()
         if not member.is_company_admin:
-            return ResponseMessage(message='This user is not admin yet.')
+            raise await self.exception().is_not_admin_yet()
         updated_data={'is_company_admin': False, 'updated_at': datetime.utcnow()}
         await database.execute(self.db_company_members.update().values(updated_data).where(
             self.db_company_members.c.company_id==company_id,
@@ -184,10 +194,10 @@ class CompanyMemberCRUD:
             self.db_company_members.c.company_id==company_id))
 
         if member:
-            return ResponseMessage(message='You may not request member status in this company.')
+            raise await self.exception().you_just_may_not()
+
         # chek if company exists    
-        if not await database.execute(DBCompany.select().where(DBCompany.c.id==company_id)):
-            return ResponseMessage(message='Company was not found.')
+        await database.execute(DBCompany.select().where(DBCompany.c.id==company_id))
         now = datetime.utcnow()
         updated_data={'requested': now, 'updated_at': now, 'created_at': now, 'company_id': company_id, 'member_id': user_id, 'is_company_admin': False}
         if await database.execute(self.db_company_members.insert().values(updated_data)):
@@ -196,7 +206,7 @@ class CompanyMemberCRUD:
     
     async def accept_member_status(self, member: CompanyMemberModel) -> ResponseMessage:
         if not member.requested:
-            return ResponseMessage(message='This user did not made a request for member status.')
+            raise await self.exception().not_requested()
         now = datetime.utcnow()
         updated_data={'requested': None, 'updated_at': now, 'created_at': now, 'active_member': now}
         await database.execute(self.db_company_members.update().values(updated_data).where(

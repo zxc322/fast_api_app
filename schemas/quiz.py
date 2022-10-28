@@ -92,3 +92,9 @@ class UpdateQuestion(BaseModel):
     id: int
     question: str
 
+class UpdateQuiz(BaseModel):
+    id: int
+    name: Optional[str]
+    description: Optional[str]
+    frequency: Optional[int]
+

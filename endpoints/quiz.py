@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 import json
 
-from schemas.quiz import CompaniesQuiezes, UpdateQuestion, AppendOption, AppendQuestion, CreateQuiz, QuizResponseMessage, ResponseId, UpdateOption
+from schemas.quiz import UpdateQuiz, CompaniesQuiezes, UpdateQuestion, AppendOption, AppendQuestion, CreateQuiz, QuizResponseMessage, ResponseId, UpdateOption
 from repositories.quiz import QuizCRUD
 from repositories.company import CompanyCRUD
 from repositories.companies_members import CompanyMemberCRUD
@@ -77,8 +77,9 @@ async def append_question(question: UpdateQuestion, user = Depends(read_users_me
     return await crud.update_question(question=question)
 
 
-@router.delete('/question/{id}')#, response_model=ResponseId)
+@router.delete('/question/{id}', response_model=ResponseId)
 async def delete_option(id: int, user = Depends(read_users_me)) -> ResponseId:
+    """ Delete option from question, where option.question_id==id (Raise exc if len(options) of this question <=2 """
     crud = QuizCRUD(db_quiz=DBQuiz, db_question=DBQuestion, db_option=DBOption)
 
     # next code returns quiz_company_id joined to question (we need it for permissions)
@@ -90,5 +91,32 @@ async def delete_option(id: int, user = Depends(read_users_me)) -> ResponseId:
 
 @router.get('/company/{id}', response_model=CompaniesQuiezes)
 async def delete_option(id: int, page: int = 1, limit: int = 10) -> CompaniesQuiezes:
+    """ Returns a list of quizes, where quiz.company_id==id"""
+
+    # Idk do we need permissions here? Will add it later if yes ...
     crud = QuizCRUD(db_quiz=DBQuiz, db_question=DBQuestion, db_option=DBOption)         
     return await crud.get_quiz_list(company_id=id, page=page, limit=limit)
+
+
+@router.post('/update')
+async def update_quiz(quiz: UpdateQuiz, user = Depends(read_users_me)) -> ResponseId:
+    """ Updates quiz attributes (but not nested fields) """
+    crud = QuizCRUD(db_quiz=DBQuiz, db_question=DBQuestion, db_option=DBOption)
+    quiz_ = await crud.get_quiz_by_id(id=quiz.id)
+    company = await CompanyCRUD(db_company=DBCompany).get_by_id(id=quiz_.company_id)    
+    await Permissions(user=user).permission_validator_for_company_owner(company=company)
+    print(quiz)
+    print(quiz_)
+    return await crud.update_quiz(quiz=quiz)
+
+
+@router.delete('/{id}', response_model=ResponseId)
+async def delete_option(id: int) -> ResponseId:
+    """ This endpoint fill "deleted_at" field (we are using it foe filter) """
+
+    crud = QuizCRUD(db_quiz=DBQuiz, db_question=DBQuestion, db_option=DBOption)
+    quiz_ = await crud.get_quiz_by_id(id=id)
+    company = await CompanyCRUD(db_company=DBCompany).get_by_id(id=quiz_.company_id)    
+    #await Permissions(user=user).permission_validator_for_company_owner(company=company)
+    
+    return await crud.remove_quiz(id=id)

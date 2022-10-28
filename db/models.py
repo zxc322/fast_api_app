@@ -73,7 +73,7 @@ class Quiz(Base):
     description = Column(String, nullable=True)
     frequency = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
     deleted_at = Column(DateTime, default=None, nullable=True)
         
     company_id = Column(Integer, ForeignKey("companies.id"))

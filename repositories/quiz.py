@@ -5,7 +5,7 @@ from sqlalchemy import select, func
 from db.connection import database
 from datetime import datetime
 from db.models import quiz as DBQuiz, question as DBQuestion, option as DBOption, companies as DBCompany
-from schemas.quiz import CompaniesQuiezes, AppendQuestion, FullQuizInfo, UpdateOption, AppendOption, CreateQuiz, CheckQuiz, QuizResponseMessage, ReturnQuestion, ResponseId, FullOptionData, UpdateQuestion
+from schemas.quiz import UpdateQuiz, CompaniesQuiezes, AppendQuestion, FullQuizInfo, UpdateOption, AppendOption, CreateQuiz, CheckQuiz, QuizResponseMessage, ReturnQuestion, ResponseId, FullOptionData, UpdateQuestion
 
 from repositories.service import paginate_data
 from utils.exceptions import CustomError, MyExceptions
@@ -91,7 +91,6 @@ class QuizCRUD:
         if not quiz:
             raise await self.exc().quiz_not_found(id=id)
         r = dict(quiz)    
-        print('quiz:', r)
         return FullQuizInfo(**r)
 
     async def append_question(self, question: AppendQuestion) -> ResponseId:
@@ -132,11 +131,22 @@ class QuizCRUD:
             ).limit(limit).offset(skip)
 
         quizes = await database.fetch_all(query=query)
-        count = await database.fetch_one(select(func.count().label('zxc')).select_from(self.db_quiz).where(
+        count = await database.fetch_one(select(func.count().label('quizes')).select_from(self.db_quiz).where(
             self.db_quiz.c.company_id==company_id,
             self.db_quiz.c.deleted_at==None
         ))
     
-        total_pages = math.ceil(count.zxc/limit)
-        pagination = await paginate_data(page, count.zxc, total_pages, end, limit, url='quiz/company')
+        total_pages = math.ceil(count.quizes/limit)
+        pagination = await paginate_data(page, count.quizes, total_pages, end, limit, url='quiz/company')
         return CompaniesQuiezes(quizes=quizes, pagination=pagination)
+
+
+    async def update_quiz(self, quiz: UpdateQuiz) -> ResponseId:
+        updated_data = quiz.dict(skip_defaults=True)
+        updated_data.update(updated_at=datetime.utcnow())
+        await database.execute(self.db_quiz.update().values(updated_data).where(self.db_quiz.c.id==quiz.id))
+        return ResponseId(id=quiz.id)
+
+    async def remove_quiz(self, id: int) -> ResponseId:
+        await database.execute(self.db_quiz.update().values(deleted_at=datetime.utcnow()).where(self.db_quiz.c.id==id))
+        return ResponseId(id=id)

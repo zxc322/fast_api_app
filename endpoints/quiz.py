@@ -111,12 +111,12 @@ async def update_quiz(quiz: UpdateQuiz, user = Depends(read_users_me)) -> Respon
 
 
 @router.delete('/{id}', response_model=ResponseId)
-async def delete_option(id: int) -> ResponseId:
-    """ This endpoint fill "deleted_at" field (we are using it foe filter) """
+async def delete_option(id: int, user = Depends(read_users_me)) -> ResponseId:
+    """ This endpoint fill "deleted_at" field (we are using it for filter) """
 
     crud = QuizCRUD(db_quiz=DBQuiz, db_question=DBQuestion, db_option=DBOption)
     quiz_ = await crud.get_quiz_by_id(id=id)
     company = await CompanyCRUD(db_company=DBCompany).get_by_id(id=quiz_.company_id)    
-    #await Permissions(user=user).permission_validator_for_company_owner(company=company)
+    await Permissions(user=user).permission_validator_for_company_owner(company=company)
     
     return await crud.remove_quiz(id=id)

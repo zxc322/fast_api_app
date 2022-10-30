@@ -24,6 +24,9 @@ class UpdateOption(BaseModel):
 class FullOptionData(ResponseId, AppendOption):
     pass
 
+class OtionForUser(Options):
+    option_id: int
+
 class Question(BaseModel):
     question: str
     options: List[Options]
@@ -97,4 +100,19 @@ class UpdateQuiz(BaseModel):
     name: Optional[str]
     description: Optional[str]
     frequency: Optional[int]
+
+class OtionForUser(Options):
+    option_id: int
+
+class QuestionForUser(BaseModel):
+    question_id: int
+    question: str
+    options: List[OtionForUser]
+
+class QuizForUser(BaseModel):
+    quiz_id: int
+    quiz_name: str
+    frequency: int
+    total_questions: int
+    questions: List[QuestionForUser]
 

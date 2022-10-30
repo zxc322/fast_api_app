@@ -4,7 +4,7 @@ import json
 from schemas.user import PublicUser, User, UserCreate, UpdateUser, Users, UserRsposneId
 from db.models import users as DBUser
 from repositories.user import UserCRUD
-from repositories.service import Log
+from repositories.services.log import Log
 from fastapi.encoders import jsonable_encoder
 from utils.exceptions import CustomError
 from utils.permissions import Permissions

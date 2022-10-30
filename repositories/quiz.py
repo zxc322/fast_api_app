@@ -7,7 +7,7 @@ from datetime import datetime
 from db.models import quiz as DBQuiz, question as DBQuestion, option as DBOption, companies as DBCompany
 from schemas.quiz import UpdateQuiz, CompaniesQuiezes, AppendQuestion, FullQuizInfo, UpdateOption, AppendOption, CreateQuiz, CheckQuiz, QuizResponseMessage, ReturnQuestion, ResponseId, FullOptionData, UpdateQuestion
 
-from repositories.service import paginate_data
+from repositories.services.pagination import paginate_data
 from utils.exceptions import CustomError, MyExceptions
 
 
@@ -98,10 +98,8 @@ class QuizCRUD:
         if await database.fetch_one(self.db_question.select().where(
             self.db_question.c.question==question.question, self.db_question.c.quiz_id==question.quiz_id)):
             raise await self.exc().question_already_exists(name=question.question) 
-        print('question', question)
         new_question_id = await database.execute(self.db_question.insert().values(question=question.question, quiz_id=question.quiz_id))
         for opt in question.options:
-            print('opt', opt)
             await database.execute(self.db_option.insert().values(option=opt.option, is_right=opt.is_right, question_id=new_question_id))
         return ResponseId(id=new_question_id)
 
@@ -113,7 +111,6 @@ class QuizCRUD:
 
     async def delete_question(self, question) -> ResponseId:
         questions = await database.fetch_all(self.db_question.select().where(self.db_question.c.quiz_id==question.quiz_id))
-        print('!!!', questions  )
         if not questions or len(questions) <= 2:
             raise await self.exc().low_questions_quantity(id=question.quiz_id)
         await database.execute(self.db_question.update().values(deleted_at=datetime.utcnow()).where(self.db_question.c.id==question.id))

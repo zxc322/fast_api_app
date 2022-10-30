@@ -1,5 +1,6 @@
 from email.policy import default
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from tokenize import Floatnumber
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -22,7 +23,9 @@ class User(Base):
     updated_by = Column(Integer, nullable=True) 
 
     company = relationship("Company")
-    members = relationship("CompanyMembers")  
+    members = relationship("CompanyMembers")
+    quiz_result = relationship("QuizResult")
+    avarage_mark = relationship("AvarageUsersMark")  
 
 
 class Company(Base):
@@ -105,6 +108,32 @@ class Option(Base):
     question = relationship("Question", back_populates="option")
 
 
+class QuizResult(Base):
+    __tablename__ = 'quiz_result'
+
+    id = Column(Integer, primary_key=True, index=True)
+    total_questions = Column(Integer)
+    right_answers = Column(Integer)
+    avarage_mark = Column(Float)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
+    quiz_id = Column(Integer, ForeignKey("quiz.id"))
+
+
+class AvarageUsersMark(Base):
+    __tablename__ = 'avarage_users_mark'
+
+    id = Column(Integer, primary_key=True, index=True)
+    quizzes_passed = Column(Integer)
+    total_questions = Column(Integer)
+    right_answers = Column(Integer)
+    avarage_mark = Column(Float)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+
+    user_id = Column(Integer, ForeignKey("users.id"))
     
 
 users = User.__table__
@@ -113,3 +142,5 @@ company_members = CompanyMembers.__table__
 quiz = Quiz.__table__
 question = Question.__table__
 option = Option.__table__
+quiz_result = QuizResult.__table__
+avarage_mark = AvarageUsersMark.__table__

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from db.models import companies as DBCompany, users as DBUser
 from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies, ReturnCompany
-from repositories.service import paginate_data
+from repositories.services.pagination import paginate_data
 from utils.exceptions import CustomError
 from sqlalchemy import select, func
 

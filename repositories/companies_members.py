@@ -5,7 +5,7 @@ from datetime import datetime
 
 from db.models import company_members as DBCompany_members, users as DBUser, companies as DBCompany
 from schemas.companies_members import Invite, ResponseMessage, MyInvites, CompanyMemberModel, UsersListInCompany
-from repositories.service import paginate_data
+from repositories.services.pagination import paginate_data
 from utils.exceptions import CustomError, MyExceptions
 from repositories.user import UserCRUD
 from sqlalchemy import select, func

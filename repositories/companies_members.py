@@ -13,8 +13,8 @@ from sqlalchemy import select, func
 
 class CompanyMemberCRUD:
 
-    def __init__(self, db_company_members: DBCompany_members = None):
-        self.db_company_members = db_company_members
+    def __init__(self):
+        self.db_company_members = DBCompany_members
         self.exception = MyExceptions
 
     async def get_by_id(self, id: int) -> CompanyMemberModel:
@@ -41,7 +41,7 @@ class CompanyMemberCRUD:
 
         if not relation:
             # chek if user exists
-            user =await UserCRUD(db_user=DBUser).get_by_id(id=invite.user_id)
+            await UserCRUD().get_by_id(id=invite.user_id)
 
             invitation = self.db_company_members.insert().values(
                 company_id=invite.company_id,

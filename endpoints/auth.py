@@ -21,7 +21,7 @@ async def login_for_access_token(form_data: UserSignIn) -> Token:
 
     """ Taking email+password and generate token if data is valid or raise exepcion """
 
-    crud = UserCRUD(db_user=DBUser)
+    crud = UserCRUD()
     user = await crud.get_by_email(email=form_data.email)
     if not user:
         raise CustomError(email=form_data.email)
@@ -38,6 +38,6 @@ async def login_for_access_token(form_data: UserSignIn) -> Token:
 
 @router.get("/me/", response_model=UserRsposneId)
 async def read_users_me(token: str = Depends(token_auth_scheme)) -> UserRsposneId:
-    crud = UserCRUD(db_user=DBUser)
+    crud = UserCRUD()
     return await auth.get_current_user(crud=crud, token=token)
 

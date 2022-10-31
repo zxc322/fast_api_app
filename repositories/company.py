@@ -12,8 +12,8 @@ from sqlalchemy import select, func
 
 class CompanyCRUD:
 
-    def __init__(self, db_company: DBCompany = None):
-        self.db_company = db_company
+    def __init__(self):
+        self.db_company = DBCompany
     
     async def get_by_name(self, name: str) -> Optional[ReturnCompany]:
         company = await database.fetch_one(self.db_company.select().where(

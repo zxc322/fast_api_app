@@ -11,7 +11,7 @@ class MyExceptions:
     async def permission_denied(self): 
         return self.exc(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="You don't perrmissions for this action."
+        detail="You don't have perrmissions for this action."
     )
 
     async def credentials_exception(self):
@@ -19,6 +19,12 @@ class MyExceptions:
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    async def id_is_0(self):
+        return self.exc(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Id can't be 0"
     )
 
 
@@ -98,6 +104,12 @@ class MyExceptions:
         return self.exc(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Quiz with id {id} wasn't found."
+    )
+
+    async def quiz_already_exists(self, name):
+        return self.exc(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=f"Quiz witn name <{name}> already exists in this company."
     )
 
     async def question_already_exists(self, name):

@@ -12,10 +12,10 @@ from utils.exceptions import CustomError, MyExceptions
 
 
 class QuizCRUD:
-    def __init__(self, db_quiz, db_question, db_option) -> None:
-        self.db_quiz = db_quiz
-        self.db_question = db_question
-        self.db_option = db_option
+    def __init__(self) -> None:
+        self.db_quiz = DBQuiz
+        self.db_question = DBQuestion
+        self.db_option = DBOption
         self.exc = MyExceptions
 
 
@@ -30,8 +30,8 @@ class QuizCRUD:
 
     async def create_quiz(self, quiz: CreateQuiz) -> QuizResponseMessage:
         if await self.get_by_name(name=quiz.name, company_id=quiz.company_id):
-            pass
-            #raise CustomError(not_unique_quiz_name=True)
+            raise await self.exc().quiz_already_exists(name=quiz.name)
+            
         now = datetime.utcnow()
         quiz_data = dict(name=quiz.name, description=quiz.description, frequency=quiz.frequency,
             created_at=now, updated_at=now, company_id=quiz.company_id)

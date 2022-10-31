@@ -6,7 +6,6 @@ from schemas.company import ReturnCompany
 from schemas.companies_members import CompanyMemberModel
 from repositories.company import CompanyCRUD
 from repositories.companies_members import CompanyMemberCRUD
-from db.models import companies as DBCompany, company_members as DBCompanies_members
 
 class Permissions:
 
@@ -26,9 +25,8 @@ class Permissions:
     async def permission_validator_for_company_owner(self, company: ReturnCompany):
         await self.validate_token()
         if self.user.id != company.owner_id:
-            admin = await CompanyMemberCRUD(db_company_members=DBCompanies_members).is_company_admin(
+            admin = await CompanyMemberCRUD().is_company_admin(
                 user_id=self.user.id, company_id=company.id)
-            print('admin', admin)
             if not admin:
                 raise await self.exception().permission_denied()
 

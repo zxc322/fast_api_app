@@ -7,20 +7,23 @@ from db.models import users as DBUser
 from schemas.user import UserCreate, User, Users, UserRsposneId, UpdateUser
 from security.auth import get_password_hash
 from repositories.services.pagination import paginate_data
-from utils.exceptions import CustomError
+from utils.exceptions import CustomError, MyExceptions
 
 
 
 class UserCRUD:
 
-    def __init__(self, db_user: DBUser = None):
-        self.db_user = db_user
-    
+    def __init__(self):
+        self.db_user = DBUser
+        self.exc = MyExceptions
+
     async def get_by_email(self, email) -> Optional[User]:
         user = await database.fetch_one(self.db_user.select().where(self.db_user.c.email == email, self.db_user.c.deleted_at == None))
         return User(**user) if user else None
     
     async def get_by_id(self, id: int) -> User:
+        if id == 0:
+            raise await self.exc().id_is_0() 
         user = await database.fetch_one(self.db_user.select().where(self.db_user.c.id == id, self.db_user.c.deleted_at == None))
         if not user:
             raise CustomError(id=id)

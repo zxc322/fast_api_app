@@ -47,8 +47,8 @@ class UpdateUser(BaseModel):
     username: Optional[constr(min_length=3)]
     password: Optional[constr(min_length=3)]
     about_me: Optional[str]
-    is_active: Optional[bool] = False
-    is_admin: Optional[bool] = False
+
+
 
 
 class Users(BaseModel):

@@ -1,8 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy.sql import select
+from databases import Database
 
-
-from db.connection import database
 from schemas import quiz_results as schema_qr
 from schemas import quiz as schema_q
 from repositories.services import quiz_utils
@@ -12,7 +11,8 @@ from db.models import quiz as DBQuiz, question as DBQuestion, option as DBOption
 
 
 class QuizResultCRUD:
-    def __init__(self) -> None:
+    def __init__(self, db: Database) -> None:
+        self.db = db
         self.db_quiz = DBQuiz
         self.db_question = DBQuestion
         self.db_option = DBOption
@@ -38,9 +38,9 @@ class QuizResultCRUD:
             self.db_option.c.question_id.label('option_question_id')
         ).select_from(query_joins).where(self.db_quiz.c.id==quiz_id, self.db_quiz.c.deleted_at==None)
 
-        queryset = await database.fetch_all(query=query)
+        queryset = await self.db.fetch_all(query=query)
 
-        question_count = await database.fetch_one(select(func.count().label('total')).select_from(
+        question_count = await self.db.fetch_one(select(func.count().label('total')).select_from(
             self.db_question).where(self.db_question.c.quiz_id==quiz_id,
             self.db_question.c.deleted_at==None))
 
@@ -55,7 +55,7 @@ class QuizResultCRUD:
             raise await self.exc().id_is_0() 
         await save_to_redis(user_id=user_id, income_quiz=income_quiz)
         result = await quiz_utils.generate_users_results_as_dict(user_id=user_id, income_quiz=income_quiz)
-        await database.execute(self.db_quiz_result.insert().values(result))
+        await self.db.execute(self.db_quiz_result.insert().values(result))
         await quiz_utils.rewrite_avg_mark(average_table=self.db_avarage_mark, data=result)        
         return schema_qr.ResultsFeedback(**result)
 

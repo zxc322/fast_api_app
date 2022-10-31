@@ -1,10 +1,10 @@
 from typing import Optional
 import math
-from db.connection import database
+from databases import Database
 from datetime import datetime
 
 from db.models import companies as DBCompany, users as DBUser
-from schemas.company import CreateCompany, PublicCompany, ResponseCompanyId, UpdateCompany, Company, Companies, ReturnCompany
+from schemas.company import CreateCompany, ResponseCompanyId, UpdateCompany, Companies, ReturnCompany
 from repositories.services.pagination import paginate_data
 from utils.exceptions import CustomError
 from sqlalchemy import select, func
@@ -12,17 +12,18 @@ from sqlalchemy import select, func
 
 class CompanyCRUD:
 
-    def __init__(self):
+    def __init__(self, db: Database):
+        self.db = db
         self.db_company = DBCompany
     
     async def get_by_name(self, name: str) -> Optional[ReturnCompany]:
-        company = await database.fetch_one(self.db_company.select().where(
+        company = await self.db.fetch_one(self.db_company.select().where(
             self.db_company.c.name == name,
             self.db_company.c.deleted_at == None))
         return ReturnCompany(**company) if company else None
 
     async def get_by_id(self, id: int) -> ReturnCompany:
-        company = await database.fetch_one(self.db_company.select().where(
+        company = await self.db.fetch_one(self.db_company.select().where(
             self.db_company.c.id == id,
             self.db_company.c.deleted_at == None))
         if not company:
@@ -42,7 +43,7 @@ class CompanyCRUD:
             owner_id=owner
         )      
         
-        return ResponseCompanyId(id=await database.execute(company))
+        return ResponseCompanyId(id=await self.db.execute(company))
 
 
     async def update(self, id: int, company_in: UpdateCompany) -> ResponseCompanyId:
@@ -50,7 +51,7 @@ class CompanyCRUD:
         updated_data = company_in.dict(skip_defaults=True)
         updated_data['updated_at'] = now
         u = self.db_company.update().values(updated_data).where(self.db_company.c.id==id)
-        await database.execute(u)
+        await self.db.execute(u)
         return ResponseCompanyId(id=id)
 
     async def remove(self, id: int) -> ResponseCompanyId:
@@ -58,7 +59,7 @@ class CompanyCRUD:
         now = datetime.utcnow()
         deleted_data = {'deleted_at': now, 'name': '[REMOVED] ' + company.name, 'updated_at': now}
         u = self.db_company.update().values(deleted_data).where(self.db_company.c.id==id)
-        await database.execute(u)
+        await self.db.execute(u)
         return ResponseCompanyId(id=id)
 
 
@@ -84,8 +85,8 @@ class CompanyCRUD:
             self.db_company.c.visible==True
         )
 
-        companies = await database.fetch_all(query=query)
-        count = await database.fetch_one(count_query)
+        companies = await self.db.fetch_all(query=query)
+        count = await self.db.fetch_one(count_query)
         count = count.total_companies
         total_pages = math.ceil(count/limit)
         pagination = await paginate_data(page, count, total_pages, end, limit, url='company')

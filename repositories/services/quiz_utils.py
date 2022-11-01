@@ -6,7 +6,7 @@ from schemas import quiz_results as schema_qr
 from schemas import quiz as schema_q
 
 # async def generate_nested_quiz(queryset, question_count) -> Dict:
-async def generate_nested_quiz(queryset, data_in: schema_qr.QuizResponse) -> Dict:
+async def generate_nested_quiz(queryset, data_in: schema_qr.QuizResponse) -> schema_q.QuizForUser:
         """ Generate a dict with all nested fields of quiz """
 
         quiz_response=dict(data_in)

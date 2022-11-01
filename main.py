@@ -8,7 +8,7 @@ from db.connection import database
 from my_redis.config import init_redis_pool
 from api_routers import routers
 app = FastAPI()
-user = 123
+
 logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
 

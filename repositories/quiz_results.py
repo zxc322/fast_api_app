@@ -46,8 +46,8 @@ class QuizResultCRUD:
 
         if not queryset:
             raise await self.exc().quiz_not_found(id=quiz_id)
-        result = await quiz_utils.generate_nested_quiz(queryset=queryset, question_count=question_count)
-        return schema_q.QuizForUser(**result)
+        data_in = schema_qr.QuizResponse(total_questions=question_count.total)
+        return await quiz_utils.generate_nested_quiz(queryset=queryset, data_in=data_in)
 
 
     async def parse_quiz_result(self, income_quiz: schema_qr.IncomeQuiz, user_id: int) -> schema_qr.ResultsFeedback:

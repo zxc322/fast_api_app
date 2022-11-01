@@ -1,31 +1,35 @@
 from typing import Dict
 from datetime import datetime
-from db.connection import database
 
-async def generate_nested_quiz(queryset, question_count) -> Dict:
+from db.connection import database
+from schemas import quiz_results as schema_qr
+from schemas import quiz as schema_q
+
+# async def generate_nested_quiz(queryset, question_count) -> Dict:
+async def generate_nested_quiz(queryset, data_in: schema_qr.QuizResponse) -> Dict:
         """ Generate a dict with all nested fields of quiz """
 
-        quiz_resposne = {'quiz_id': 0, 'quiz_name': '', 'frequency': 0, 'total_questions': question_count.total, 'questions': []}  
-
+        quiz_response=dict(data_in)
+ 
         for s in queryset:
-            if not quiz_resposne.get('quiz_id'):
-                quiz_resposne['quiz_id'] = s.quiz_id
-            if not quiz_resposne.get('quiz_name'):
-                quiz_resposne['quiz_name'] = s.quiz_name
-            if not quiz_resposne.get('frequency'):
-                quiz_resposne['frequency'] = s.quiz_id
+            if not quiz_response.get('quiz_id'):
+                quiz_response['quiz_id'] = s.quiz_id
+            if not quiz_response.get('quiz_name'):
+                quiz_response['quiz_name'] = s.quiz_name
+            if not quiz_response.get('frequency'):
+                quiz_response['frequency'] = s.quiz_id
 
 
             # add question to question list if not exists
-            if s.question_id not in (x.get('question_id') for x  in quiz_resposne.get('questions')):
-                quiz_resposne.get('questions').append(dict(question_id=s.question_id, question=s.question, options=list()))
+            if s.question_id not in (x.get('question_id') for x  in quiz_response.get('questions')):
+                quiz_response.get('questions').append(dict(question_id=s.question_id, question=s.question, options=list()))
 
             # add option to related question
-            for question in quiz_resposne.get('questions'):
+            for question in quiz_response.get('questions'):
                 if s.option_question_id == question.get('question_id'):
                     question.get('options').append(dict(option_id=s.option_id, option=s.option, is_right=s.is_right))
 
-        return quiz_resposne
+        return schema_q.QuizForUser(**quiz_response)
 
 
 async def generate_users_results_as_dict(user_id: int, income_quiz) -> Dict:

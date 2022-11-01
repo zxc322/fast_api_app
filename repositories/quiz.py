@@ -92,8 +92,7 @@ class QuizCRUD:
         quiz = await self.db.fetch_one(self.db_quiz.select().where(self.db_quiz.c.id==id, self.db_quiz.c.deleted_at==None))
         if not quiz:
             raise await self.exc().quiz_not_found(id=id)
-        r = dict(quiz)    
-        return FullQuizInfo(**r)
+        return FullQuizInfo(**dict(quiz))
 
     async def append_question(self, question: AppendQuestion) -> ResponseId:
         # chek if this question alrdy exists in this quiz 

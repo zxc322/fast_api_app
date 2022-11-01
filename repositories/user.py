@@ -77,7 +77,7 @@ class UserCRUD:
         queryset = await self.db.fetch_all(users_on_page)
         total_pages = math.ceil(count/limit)
 
-        users = [dict(result) for result in queryset]
+        users = (result for result in queryset)
         pagination = await paginate_data(page, count, total_pages, end, limit, url='users')
         return Users(users=users, pagination=pagination)
 

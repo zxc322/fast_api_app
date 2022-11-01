@@ -25,3 +25,11 @@ class ResultsFeedback(BaseModel):
     total_questions: int
     right_answers: int
     avarage_mark: float
+
+
+class QuizResponse(BaseModel):
+    quiz_id: Optional[int]
+    quiz_name: Optional[str]
+    frequency: Optional[int]
+    total_questions: Optional[int]
+    questions: Optional[List] = []

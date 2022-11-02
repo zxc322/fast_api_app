@@ -9,7 +9,7 @@ from schemas.token import TokenData
 from schemas.user import User, UserRsposneId
 from settings import config
 from security.auth0 import VerifyToken
-from utils.exceptions import credentials_exception
+from utils.exceptions import MyExceptions# credentials_exception
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -47,7 +47,7 @@ async def get_current_user(crud, token) -> UserRsposneId:
         payload = jwt.decode(token.credentials, config.SECRET_KEY, algorithms=[config.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
-            raise credentials_exception
+            raise await MyExceptions().credentials_exception()
         token_data = TokenData(email=email)
     except JWTError:
         #raise credentials_exception
@@ -56,9 +56,9 @@ async def get_current_user(crud, token) -> UserRsposneId:
             result = await instanse.verify()
             return result
         except:
-            raise credentials_exception
+            raise await MyExceptions().credentials_exception()
     user = await crud.get_by_email(email=token_data.email)
     if user is None:
-        raise credentials_exception
+        raise await MyExceptions().credentials_exception()
     return UserRsposneId(id=user.id)
 

@@ -1,5 +1,5 @@
 from db.base import Base
-from pydantic import BaseModel, EmailStr, constr, root_validator
+from pydantic import BaseModel, root_validator, constr
 from typing import Optional
 from datetime import date
 from typing import List, Dict
@@ -9,27 +9,24 @@ class ResponseId(BaseModel):
     id: int
 
 
-class Options(BaseModel):
-    option: str
-    is_right: bool = False
+class Option(BaseModel):
+    options: List[str]
 
-class AppendOption(Options):
+class AppendOption(Option):
     question_id: int
 
-class UpdateOption(BaseModel):
-    id: int
-    option: Optional[str]
-    is_right: Optional[bool]
+class DeleteOptionByIndex(BaseModel):
+    question_id: int
+    option_idx: int
 
-class FullOptionData(ResponseId, AppendOption):
-    pass
-
-class OtionForUser(Options):
+class OtionForUser(Option):
     option_id: int
 
 class Question(BaseModel):
     question: str
-    options: List[Options]
+    right_answer: int
+    options: List[str]
+    
     
     @root_validator
     def check_options_length(cls, values):
@@ -78,7 +75,7 @@ class QuizResponseMessage(BaseModel):
 class PublickQuiz(BaseModel):
     id: int
     name: str
-    description: str
+    description: Optional[str]
 
 
 class CompaniesQuiezes(BaseModel):
@@ -93,7 +90,16 @@ class FullQuizInfo(PublickQuiz):
 
 class UpdateQuestion(BaseModel):
     id: int
-    question: str
+    question: Optional[str]
+    options: Optional[List[str]]
+    right_answer: Optional[int]
+
+    @root_validator
+    def check_questions_length(cls, values):
+        questions = values.get('options')
+        if questions and len(questions) < 2:
+            raise ValueError('Minimum 2 options for question required')
+        return values
 
 class UpdateQuiz(BaseModel):
     id: int
@@ -101,13 +107,14 @@ class UpdateQuiz(BaseModel):
     description: Optional[str]
     frequency: Optional[int]
 
-class OtionForUser(Options):
+class OtionForUser(Option): 
     option_id: int
 
 class QuestionForUser(BaseModel):
     question_id: int
     question: str
-    options: List[OtionForUser]
+    right_answer: int
+    options: List[str]
 
 class QuizForUser(BaseModel):
     quiz_id: int

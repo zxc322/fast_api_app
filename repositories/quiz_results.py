@@ -7,7 +7,7 @@ from schemas import quiz as schema_q
 from repositories.services import quiz_utils
 from repositories.services.redis_utils import save_to_redis
 from utils.exceptions import MyExceptions
-from db.models import quiz as DBQuiz, question as DBQuestion, option as DBOption, avarage_mark as DBAvg_mark, quiz_result as DBQuiz_result
+from db.models import quiz as DBQuiz, question as DBQuestion, avarage_mark as DBAvg_mark, quiz_result as DBQuiz_result
 
 
 class QuizResultCRUD:
@@ -15,7 +15,6 @@ class QuizResultCRUD:
         self.db = db
         self.db_quiz = DBQuiz
         self.db_question = DBQuestion
-        self.db_option = DBOption
         self.db_quiz_result = DBQuiz_result
         self.db_avarage_mark = DBAvg_mark
         self.exc = MyExceptions
@@ -24,7 +23,7 @@ class QuizResultCRUD:
     async def get_ui_quiz(self, quiz_id: int) -> schema_q.QuizForUser:
 
         
-        query_joins = self.db_question.join(self.db_quiz).join(self.db_option)
+        query_joins = self.db_question.join(self.db_quiz)
 
         query = select(
             self.db_quiz.c.id.label('quiz_id'),
@@ -32,17 +31,14 @@ class QuizResultCRUD:
             self.db_quiz.c.frequency.label('frequency'),
             self.db_question.c.id.label('question_id'),
             self.db_question.c.question.label('question'),
-            self.db_option.c.id.label('option_id'),
-            self.db_option.c.option.label('option'),
-            self.db_option.c.is_right.label('is_right'),
-            self.db_option.c.question_id.label('option_question_id')
-        ).select_from(query_joins).where(self.db_quiz.c.id==quiz_id, self.db_quiz.c.deleted_at==None)
+            self.db_question.c.options.label('options'),
+            self.db_question.c.right_answer.label('right_answer')
+        ).select_from(query_joins).where(self.db_quiz.c.id==quiz_id, self.db_quiz.c.deleted_at==None).order_by(self.db_question.c.id)
 
         queryset = await self.db.fetch_all(query=query)
 
         question_count = await self.db.fetch_one(select(func.count().label('total')).select_from(
-            self.db_question).where(self.db_question.c.quiz_id==quiz_id,
-            self.db_question.c.deleted_at==None))
+            self.db_question).where(self.db_question.c.quiz_id==quiz_id))
 
         if not queryset:
             raise await self.exc().quiz_not_found(id=quiz_id)

@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends
 from datetime import timedelta
-from fastapi import Depends
 from fastapi.security import HTTPBearer
 
 from schemas.token import Token

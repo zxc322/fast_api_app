@@ -7,7 +7,7 @@ from typing import List, Dict
 class ReturnCompany(BaseModel):
     id: int
     name: str
-    description: str
+    description: Optional[str]
     visible: bool
     created_at: date
     updated_at: date

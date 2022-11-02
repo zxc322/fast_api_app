@@ -10,24 +10,24 @@ async def generate_nested_quiz(queryset, data_in: schema_qr.QuizResponse) -> sch
         """ Generate a dict with all nested fields of quiz """
 
         quiz_response=dict(data_in)
+        print('queryset@@@@@@@@@@@@@@@@@@@@@@@@@@@@', queryset)
+        for a in queryset:
+            print(dict(a), end='\n')
  
-        for s in queryset:
+        for question in queryset:
             if not quiz_response.get('quiz_id'):
-                quiz_response['quiz_id'] = s.quiz_id
+                quiz_response['quiz_id'] = question.quiz_id
             if not quiz_response.get('quiz_name'):
-                quiz_response['quiz_name'] = s.quiz_name
+                quiz_response['quiz_name'] = question.quiz_name
             if not quiz_response.get('frequency'):
-                quiz_response['frequency'] = s.quiz_id
+                quiz_response['frequency'] = question.quiz_id
 
-
-            # add question to question list if not exists
-            if s.question_id not in (x.get('question_id') for x  in quiz_response.get('questions')):
-                quiz_response.get('questions').append(dict(question_id=s.question_id, question=s.question, options=list()))
-
-            # add option to related question
-            for question in quiz_response.get('questions'):
-                if s.option_question_id == question.get('question_id'):
-                    question.get('options').append(dict(option_id=s.option_id, option=s.option, is_right=s.is_right))
+            new_question = dict(
+                question_id=question.question_id, 
+                question=question.question, 
+                right_answer=question.right_answer,
+                options = question.options)
+            quiz_response.get('questions').append(new_question)
 
         return schema_q.QuizForUser(**quiz_response)
 

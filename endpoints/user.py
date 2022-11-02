@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 import json
-from databases import Database
 
 from schemas import user as schemas_u 
 from repositories.user import UserCRUD

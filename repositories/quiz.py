@@ -57,10 +57,6 @@ class QuizCRUD:
         return schema_q.ReturnQuestion(**question)
 
 
-    async def get_option_by_id(self, id: int) :
-        pass
-
-
     async def append_option(self, options_in: schema_q.AppendOption) -> schema_q.ResponseId:
         question = await self.db.fetch_one(select(self.db_question.c.options).where(self.db_question.c.id==options_in.question_id))
         
@@ -77,23 +73,21 @@ class QuizCRUD:
 
 
 
-    async def delete_option(self, option_idx: schema_q.DeleteOptionByIndex) -> schema_q.ResponseId:
-        question = await self.db.fetch_one(select(self.db_question.c.options).where(self.db_question.c.id==option_idx.question_id))
+    async def delete_option(self, option: schema_q.DeleteOptionByName) -> schema_q.ResponseId:
+        question = await self.db.fetch_one(select(self.db_question.c.options).where(self.db_question.c.id==option.question_id))
         
         # If option with index not in options range or length options list <=2 raise exc 
-        try:
-            question.options[option_idx.option_idx]
-        except IndexError:
-                raise await self.exc().option_was_not_found(idx=option_idx.option_idx)
+        if option.name not in question.options:
+            raise await self.exc().option_was_not_found(name=option.name)
         if len(question.options) <= 2:
-            raise await self.exc().low_options_quantity(id=option_idx.question_id)
+            raise await self.exc().low_options_quantity(id=option.question_id)
 
-        question.options.pop(option_idx.option_idx)
+        question.options.remove(option.name)
 
         await self.db.execute(self.db_question.update().values(
             options=question.options).where(
-            self.db_question.c.id==option_idx.question_id))
-        return schema_q.ResponseId(id=option_idx.question_id)
+            self.db_question.c.id==option.question_id))
+        return schema_q.ResponseId(id=option.question_id)
 
 
     async def get_quiz_by_id(self, id: int) -> schema_q.FullQuizInfo:

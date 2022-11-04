@@ -82,10 +82,10 @@ class MyExceptions:
         detail=f"Question with id {id} wasn't found."
     )
 
-    async def option_was_not_found(self, idx: int):
+    async def option_was_not_found(self, name: str):
         return self.exc(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Option with index {idx} wasn't found."
+        detail=f"Option with name {name} wasn't found."
     )
 
     async def low_options_quantity(self, id: int):

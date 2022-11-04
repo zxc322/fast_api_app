@@ -15,9 +15,9 @@ class Option(BaseModel):
 class AppendOption(Option):
     question_id: int
 
-class DeleteOptionByIndex(BaseModel):
+class DeleteOptionByName(BaseModel):
     question_id: int
-    option_idx: int
+    name: str
 
 class OtionForUser(Option):
     option_id: int

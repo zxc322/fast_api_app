@@ -5,15 +5,16 @@ from datetime import date
 from typing import List, Dict
 
 
-class IncomeOption(BaseModel):
-    id: int
-    option_name: str
-    is_right: bool
+# class IncomeOption(BaseModel):
+#     id: int
+#     option_name: str
+#     is_right: bool
 
     
 class IncomeQuestion(BaseModel):
     question_id: int
-    chosen_option: IncomeOption
+    question: str
+    chosen_option: str
 
 
 class IncomeQuiz(BaseModel):
@@ -24,7 +25,7 @@ class IncomeQuiz(BaseModel):
 class ResultsFeedback(BaseModel):
     total_questions: int
     right_answers: int
-    avarage_mark: float
+    mark: float
 
 
 class QuizResponse(BaseModel):

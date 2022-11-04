@@ -104,7 +104,7 @@ class QuizResult(Base):
     id = Column(Integer, primary_key=True, index=True)
     total_questions = Column(Integer)
     right_answers = Column(Integer)
-    avarage_mark = Column(Float)
+    mark = Column(Float)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
 

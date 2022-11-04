@@ -32,14 +32,14 @@ async def append_option(options_in: schema_q.AppendOption, user = Depends(read_u
 
 
 @router.delete('/option', response_model=schema_q.ResponseId)
-async def delete_option(option_idx: schema_q.DeleteOptionByIndex, user = Depends(read_users_me)) -> schema_q.ResponseId:
+async def delete_option(option: schema_q.DeleteOptionByName, user = Depends(read_users_me)) -> schema_q.ResponseId:
     crud = QuizCRUD(db=db)
 
     # next code returns quiz_company_id joined to question (we need it for permissions)
-    question = await crud.get_question_by_id(id=option_idx.question_id)  
+    question = await crud.get_question_by_id(id=option.question_id)  
     company = await CompanyCRUD(db=db).get_by_id(id=question.company_id)    
     await Permissions(user=user).permission_validator_for_company_owner(company=company)   
-    return await crud.delete_option(option_idx=option_idx)
+    return await crud.delete_option(option=option)
 
 
 @router.post('/question', response_model=schema_q.ResponseId)
@@ -65,8 +65,8 @@ async def append_question(question: schema_q.UpdateQuestion, user = Depends(read
 
 
 @router.delete('/question/{id}', response_model=schema_q.ResponseId)
-async def delete_option(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
-    """ Delete option from question, where option.question_id==id (Raise exc if len(options) of this question <=2 """
+async def delete_question(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
+    """ Delete question from quiz, where questiion.id==id (Raise exc if len(questions)  <=2 """
     crud = QuizCRUD(db=db)
 
     # next code returns quiz_company_id joined to question (we need it for permissions)

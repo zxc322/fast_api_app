@@ -149,3 +149,14 @@ class QuizCRUD:
     async def remove_quiz(self, id: int) -> schema_q.ResponseId:
         await self.db.execute(self.db_quiz.update().values(deleted_at=datetime.utcnow()).where(self.db_quiz.c.id==id))
         return schema_q.ResponseId(id=id)
+
+
+    async def get_quiz_ids_list_for_redis(self, company_id: int) -> list:
+        """ Returns list with ids of chosen companys quizes """
+
+        quizes = await self.db.fetch_all(select(self.db_quiz.c.id).where(
+            self.db_quiz.c.company_id==company_id,
+            self.db_quiz.c.deleted_at==None
+            ))      
+    
+        return [dict(i).get('id') for i in quizes]

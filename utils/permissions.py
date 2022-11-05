@@ -1,6 +1,6 @@
 from typing import Union, Dict
 
-from utils.exceptions import MyExceptions # credentials_exception, permission_denied
+from utils.exceptions import MyExceptions
 from schemas.user import UserRsposneId
 from schemas.company import ReturnCompany
 from schemas.companies_members import CompanyMemberModel
@@ -36,4 +36,11 @@ class Permissions:
         if self.user.id != member.member_id:
             raise await self.exception().permission_denied()
 
+    async def read_users_results(self, user_id: int, company: ReturnCompany):
+        await self.permission_validator_for_company_owner(company)
+        member = await CompanyMemberCRUD(db=db).check_is_user_active_company_member(
+                user_id=user_id, company_id=company.id)
+        print('backend member', member)
+        if not member:
+            raise await self.exception().permission_denied()
     

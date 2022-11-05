@@ -5,6 +5,8 @@ from databases import Database
 from schemas import quiz_results as schema_qr
 from schemas import quiz as schema_q
 from repositories.services import quiz_results as quiz_service
+from repositories.services.write_quiz_results_to_database import InsertQuizResultToDatabase
+from repositories.services import nested_quiz_for_client as UI_service
 from utils.exceptions import MyExceptions
 from db.models import quiz as DBQuiz, question as DBQuestion, avarage_mark as DBAvg_mark, quiz_result as DBQuiz_result
 from my_redis.config import init_redis_pool
@@ -44,23 +46,23 @@ class QuizResultCRUD:
         if not queryset:
             raise await self.exc().quiz_not_found(id=quiz_id)
         data_in = schema_qr.QuizResponse(total_questions=question_count.total)
-        return await quiz_service.generate_nested_quiz(queryset=queryset, data_in=data_in)
+        return await UI_service.generate_nested_quiz(queryset=queryset, data_in=data_in)
 
 
     async def parse_quiz_result(self, income_quiz: schema_qr.IncomeQuiz, user_id: int) -> schema_qr.ResultsFeedback:
         if income_quiz.quiz_id == 0:
             raise await self.exc().id_is_0()
         quiz_questions = await self.db.fetch_all(self.db_question.select().where(self.db_question.c.quiz_id==income_quiz.quiz_id))
-        
-        now = datetime.utcnow()
-        quiz_serv = quiz_service.QuizResultFlow(user_id=user_id, income_quiz=income_quiz, quiz_questions=quiz_questions)
-        await quiz_serv.generate_dict_for_redis()
-        result_data = await quiz_serv.data_for_quiz_result()
-        result_data['created_at'] = now
-        result_data['updated_at'] = now 
 
-        await self.db.execute(self.db_quiz_result.insert().values(result_data))
-        await quiz_service.rewrite_avg_mark(average_table=self.db_avarage_mark, data=result_data)
+        quiz_serv = quiz_service.QuizResultFlow(user_id=user_id, income_quiz=income_quiz, quiz_questions=quiz_questions)
+        await quiz_serv.compile_data_and_save_to_redis()
+        result_data = await quiz_serv.data_for_quiz_result()
+         
+        save_data = InsertQuizResultToDatabase(
+            db=self.db, average_table=self.db_avarage_mark, quiz_results_table=self.db_quiz_result, data=result_data)
+
+        await save_data.save_quiz_results()
+        await save_data.rewrite_avg_mark()
         return schema_qr.ResultsFeedback(**result_data)
 
 

@@ -124,6 +124,12 @@ class MyExceptions:
         detail=f"Option <{name}> already exists in this question."
     )
 
+    async def data_was_not_found(self):
+        return self.exc(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Data was't found."
+    )
+
 
 class CustomError(HTTPException):
     def __init__(self, id: int = None, 

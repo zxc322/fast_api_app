@@ -3,7 +3,7 @@ from configparser import ConfigParser
 from fastapi import HTTPException, status, Request
 
 from settings.config import auth0_config
-from schemas.user import UserRsposneId
+from schemas import user as schema_u
 
 
 
@@ -93,15 +93,14 @@ class VerifyToken:
         
         return result
 
-    async def get_or_create_user(self, payload) -> UserRsposneId:
+    async def get_or_create_user(self, payload) -> schema_u.ResponseUserDataFromToken:
 
         """ Get user by email from token or create new user with this email 
         """
-        email = payload.get('emailemail') # In my case :D, later will change to 'email'
+        email = payload.get('email')
         if not email:
             raise self.credentials_exception
         user = await self.crud.get_by_email(email=email)
         if user:
-            user = {'id' : user.id}
-            return UserRsposneId(**user)
+            return schema_u.ResponseUserDataFromToken(id=user.id, is_admin=user.is_admin)
         return await self.crud.create_auth0_user(email=email)

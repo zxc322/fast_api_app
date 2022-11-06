@@ -1,6 +1,6 @@
-__pycache__
+*__pycache__
 .env
 .py
 logs_database.log
 logs_response_time.log
-export_data/
+export_data/*.csv

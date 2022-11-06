@@ -4,12 +4,6 @@ from typing import Optional
 from datetime import date
 from typing import List, Dict
 
-
-# class IncomeOption(BaseModel):
-#     id: int
-#     option_name: str
-#     is_right: bool
-
     
 class IncomeQuestion(BaseModel):
     question_id: int

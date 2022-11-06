@@ -3,9 +3,12 @@ from typing import Optional
 from datetime import date
 from typing import List, Dict
 
+from schemas import generic
 
-class PublicUser(BaseModel):
-    id: int
+class UserRsposneId(generic.ResponseId):
+    pass
+
+class PublicUser(generic.ResponseId):
     username: str
     about_me: Optional[str]
     is_active: bool
@@ -21,9 +24,6 @@ class User(PublicUser):
     updated_at: date
     updated_by: Optional[int]
 
-class UserRsposneId(BaseModel):
-    id : int
-
 
 class UserCreate(BaseModel):
     username: constr(min_length=3)
@@ -38,10 +38,6 @@ class UserCreate(BaseModel):
             raise ValueError('passwords do not match')
         return v
 
-class UserSignIn(BaseModel):
-    email: EmailStr
-    password: str
-    
 
 class UpdateUser(BaseModel):
     username: Optional[constr(min_length=3)]
@@ -49,11 +45,23 @@ class UpdateUser(BaseModel):
     about_me: Optional[str]
 
 
-
-
 class Users(BaseModel):
     users: List[PublicUser] = []
     pagination: Dict
+
+
+class UserSignIn(BaseModel):
+    email: EmailStr
+    password: str
+
+    
+class ResponseUserDataFromToken(generic.ResponseId):
+    is_admin: bool
+
+
+class IsUserAdmin(UserSignIn, ResponseUserDataFromToken):
+    pass
+    
 
 
 

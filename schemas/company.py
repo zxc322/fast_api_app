@@ -1,11 +1,12 @@
-from pydantic import BaseModel, EmailStr, constr, validator
+from pydantic import BaseModel, constr
 from typing import Optional
 from datetime import date
 from typing import List, Dict
 
+from schemas import generic
 
-class ReturnCompany(BaseModel):
-    id: int
+
+class ReturnCompany(generic.ResponseId):
     name: str
     description: Optional[str]
     visible: bool
@@ -36,9 +37,6 @@ class CreateCompany(BaseModel):
     description: Optional[constr(max_length=555)]
     visible: bool
 
-class ResponseCompanyId(BaseModel):
-    id: int
-
 
 class UpdateCompany(BaseModel):
     name: Optional[constr(min_length=3)]
@@ -48,3 +46,7 @@ class UpdateCompany(BaseModel):
 class Companies(BaseModel):
     companies: List[PublicCompany] = []
     pagination: Dict
+
+
+class ResponseCompanyId(generic.ResponseId):
+    pass

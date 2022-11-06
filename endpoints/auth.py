@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi.security import HTTPBearer
 
 from schemas.token import Token
-from schemas.user import UserRsposneId, UserSignIn, User
+from schemas import user as schema_u
 from security import auth 
 from db.models import users as DBUser
 from repositories.user import UserCRUD
@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: UserSignIn) -> Token:
+async def login_for_access_token(form_data: schema_u.UserSignIn) -> Token:
 
     """ Taking email+password and generate token if data is valid or raise exepcion """
 
@@ -35,8 +35,8 @@ async def login_for_access_token(form_data: UserSignIn) -> Token:
 
 
 
-@router.get("/me/", response_model=UserRsposneId)
-async def read_users_me(token: str = Depends(token_auth_scheme)) -> UserRsposneId:
+@router.get("/me/", response_model=schema_u.ResponseUserDataFromToken)
+async def read_users_me(token: str = Depends(token_auth_scheme)) -> schema_u.ResponseUserDataFromToken:
     crud = UserCRUD(db=db)
     return await auth.get_current_user(crud=crud, token=token)
 

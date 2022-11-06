@@ -2,8 +2,7 @@ from pydantic import BaseModel, EmailStr, constr, validator
 from typing import Optional
 from datetime import date
 from typing import List, Dict
-from schemas.company import PublicCompany
-from schemas.user import PublicUser
+from schemas import generic
 
 
 class Invite(BaseModel):
@@ -56,9 +55,9 @@ class CompanyMemberModel(BaseModel):
     company_id: int
     member_id: int
 
-class AcceptDecline(BaseModel):
-    id: int
 
+class AcceptDecline(generic.ResponseId):
+    pass
 
 class ProvideAdminStatus(Invite):
     pass

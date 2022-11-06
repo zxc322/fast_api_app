@@ -1,12 +1,13 @@
-from db.base import Base
-from pydantic import BaseModel, root_validator, constr
+from pydantic import BaseModel, root_validator
 from typing import Optional
 from datetime import date
 from typing import List, Dict
 
+from schemas import generic
 
-class ResponseId(BaseModel):
-    id: int
+
+class ResponseId(generic.ResponseId):
+    pass
 
 
 class Option(BaseModel):
@@ -64,16 +65,14 @@ class CreateQuiz(BaseModel):
         return values
 
 
-class CheckQuiz(BaseModel):
-    id: int
+class CheckQuiz(generic.ResponseId):
     name: str
 
 class QuizResponseMessage(BaseModel):
     message: str
 
 
-class PublickQuiz(BaseModel):
-    id: int
+class PublickQuiz(generic.ResponseId):
     name: str
     description: Optional[str]
 
@@ -88,8 +87,7 @@ class FullQuizInfo(PublickQuiz):
     updated_at: date
     company_id: int
 
-class UpdateQuestion(BaseModel):
-    id: int
+class UpdateQuestion(generic.ResponseId):
     question: Optional[str]
     options: Optional[List[str]]
     right_answer: Optional[int]
@@ -101,8 +99,7 @@ class UpdateQuestion(BaseModel):
             raise ValueError('Minimum 2 options for question required')
         return values
 
-class UpdateQuiz(BaseModel):
-    id: int
+class UpdateQuiz(generic.ResponseId):
     name: Optional[str]
     description: Optional[str]
     frequency: Optional[int]

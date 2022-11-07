@@ -28,9 +28,11 @@ class QuizResultFlow:
 
 
 
-    async def save_to_redis(self, to_redis) -> None:
+    async def save_to_redis(self, to_redis: list) -> None:
+        """ We are taking list with quiz results data, dump it into json and saving to redis
+            (Using it in function above)
+        """
         self.__quiz_id = self.quiz_questions[0].quiz_id
-        #quiz_id = 'quiz_id_' + str(self.__quiz_id)
         to_json = json.dumps(to_redis)
         redis = await self.redis()
 
@@ -62,9 +64,9 @@ class QuizResultFlow:
             to_redis.append(dict_question)
 
 
-    async def data_for_quiz_result(self) -> dict:
+    async def data_for_quiz_result(self) -> schema_qr.ServiseQuizResponse:
         now = datetime.utcnow()
-        return dict(
+        return schema_qr.ServiseQuizResponse(
             total_questions=self.__total_questions,
             right_answers=self.__right_answers,
             mark=self.__mark,

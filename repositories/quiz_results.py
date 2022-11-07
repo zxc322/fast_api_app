@@ -56,7 +56,7 @@ class QuizResultCRUD:
 
         quiz_serv = quiz_service.QuizResultFlow(user_id=user_id, income_quiz=income_quiz, quiz_questions=quiz_questions)
         await quiz_serv.compile_data_and_save_to_redis()
-        result_data = await quiz_serv.data_for_quiz_result()
+        result_data = dict(await quiz_serv.data_for_quiz_result())
          
         save_data = InsertQuizResultToDatabase(
             db=self.db, average_table=self.db_avarage_mark, quiz_results_table=self.db_quiz_result, data=result_data)

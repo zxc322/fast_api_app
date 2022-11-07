@@ -28,3 +28,10 @@ class QuizResponse(BaseModel):
     frequency: Optional[int]
     total_questions: Optional[int]
     questions: Optional[List] = []
+
+
+class ServiseQuizResponse(ResultsFeedback):
+    user_id: int
+    quiz_id: int
+    created_at: date
+    updated_at: date

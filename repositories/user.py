@@ -19,7 +19,7 @@ class UserCRUD:
         self.db_user = DBUser
         self.exc = MyExceptions
 
-    async def get_by_email(self, email) -> Optional[schems_u.IsUserAdmin]:
+    async def get_by_email(self, email: str) -> Optional[schems_u.IsUserAdmin]:
         user = await self.db.fetch_one(select(
             self.db_user.c.id,
             self.db_user.c.is_admin,

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 import json
-from databases import Database
 
 from schemas import user as schemas_u 
 from repositories.user import UserCRUD
@@ -42,7 +41,7 @@ async def update_user(id: int, user_in: schemas_u.UpdateUser, user = Depends(rea
     await Permissions(user=user).permission_validator_for_user(id=id)
     crud = UserCRUD(db=db)
     user = await crud.get_by_id(id=id)
-    return await crud.update(id=id, user_in=user_in)
+    return await crud.update(id=id, user_in=user_in, updated_by=user.id)
 
 @router.delete('/{id}', response_model=schemas_u.UserRsposneId)
 async def remove_user(id: int = id, user = Depends(read_users_me)) -> schemas_u.UserRsposneId:
@@ -56,3 +55,8 @@ async def get_users_list(page: int = 1, limit: int = 10) -> schemas_u.Users:
     crud = UserCRUD(db=db)
     return await crud.get_users(page=page, limit=limit)
 
+
+@router.get("/test/asd")
+async def delete_me():
+    crud = UserCRUD(db=db)
+    return await crud.get_by_email(email='user@example.com')

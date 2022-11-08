@@ -1,35 +1,33 @@
-from db.base import Base
-from pydantic import BaseModel, EmailStr, constr, root_validator
+from pydantic import BaseModel, root_validator
 from typing import Optional
 from datetime import date
 from typing import List, Dict
 
-
-class ResponseId(BaseModel):
-    id: int
+from schemas import generic
 
 
-class Options(BaseModel):
-    option: str
-    is_right: bool = False
-
-class AppendOption(Options):
-    question_id: int
-
-class UpdateOption(BaseModel):
-    id: int
-    option: Optional[str]
-    is_right: Optional[bool]
-
-class FullOptionData(ResponseId, AppendOption):
+class ResponseId(generic.ResponseId):
     pass
 
-class OtionForUser(Options):
+
+class Option(BaseModel):
+    options: List[str]
+
+class AppendOption(Option):
+    question_id: int
+
+class DeleteOptionByName(BaseModel):
+    question_id: int
+    name: str
+
+class OtionForUser(Option):
     option_id: int
 
 class Question(BaseModel):
     question: str
-    options: List[Options]
+    right_answer: int
+    options: List[str]
+    
     
     @root_validator
     def check_options_length(cls, values):
@@ -67,18 +65,16 @@ class CreateQuiz(BaseModel):
         return values
 
 
-class CheckQuiz(BaseModel):
-    id: int
+class CheckQuiz(generic.ResponseId):
     name: str
 
 class QuizResponseMessage(BaseModel):
     message: str
 
 
-class PublickQuiz(BaseModel):
-    id: int
+class PublickQuiz(generic.ResponseId):
     name: str
-    description: str
+    description: Optional[str]
 
 
 class CompaniesQuiezes(BaseModel):
@@ -91,23 +87,31 @@ class FullQuizInfo(PublickQuiz):
     updated_at: date
     company_id: int
 
-class UpdateQuestion(BaseModel):
-    id: int
-    question: str
+class UpdateQuestion(generic.ResponseId):
+    question: Optional[str]
+    options: Optional[List[str]]
+    right_answer: Optional[int]
 
-class UpdateQuiz(BaseModel):
-    id: int
+    @root_validator
+    def check_questions_length(cls, values):
+        questions = values.get('options')
+        if questions and len(questions) < 2:
+            raise ValueError('Minimum 2 options for question required')
+        return values
+
+class UpdateQuiz(generic.ResponseId):
     name: Optional[str]
     description: Optional[str]
     frequency: Optional[int]
 
-class OtionForUser(Options):
+class OtionForUser(Option): 
     option_id: int
 
 class QuestionForUser(BaseModel):
     question_id: int
     question: str
-    options: List[OtionForUser]
+    right_answer: int
+    options: List[str]
 
 class QuizForUser(BaseModel):
     quiz_id: int

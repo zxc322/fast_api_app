@@ -42,7 +42,7 @@ class CompanyMemberCRUD:
 
         if not relation:
             # chek if user exists
-            await UserCRUD().get_by_id(id=invite.user_id)
+            await UserCRUD(db=self.db).get_by_id(id=invite.user_id)
 
             invitation = self.db_company_members.insert().values(
                 company_id=invite.company_id,
@@ -215,5 +215,25 @@ class CompanyMemberCRUD:
         ))
         return ResponseMessage(message='Request have been accepted.')
 
+    async def check_is_user_active_company_member(self, user_id: int, company_id: int) -> Optional[bool]:
+        member = await self.db.fetch_one(self.db_company_members.select().where(
+            self.db_company_members.c.member_id==user_id,
+            self.db_company_members.c.company_id==company_id,
+            self.db_company_members.c.active_member!=None
+            ))
 
+        if member:
+            return True
+
+    
+    async def membres_of_chosen_company(self, company_id: int) -> Optional[list]:
+        """ Returns list with ids users of chosen company (we need it for redis queries """
+
+        members = await self.db.fetch_all(select(self.db_company_members.c.member_id).where(
+            self.db_company_members.c.company_id==company_id,
+            self.db_company_members.c.active_member!=None
+            ))
+
+        if members:
+            return [dict(i).get('member_id') for i in members]
     

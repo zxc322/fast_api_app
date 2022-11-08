@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends
 
-
-
 from repositories.quiz_results import QuizResultCRUD
 from repositories.quiz import QuizCRUD
 from endpoints.auth import read_users_me

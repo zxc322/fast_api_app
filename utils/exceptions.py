@@ -82,10 +82,10 @@ class MyExceptions:
         detail=f"Question with id {id} wasn't found."
     )
 
-    async def option_was_not_found(self, id: int):
+    async def option_was_not_found(self, name: str):
         return self.exc(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Option with id {id} wasn't found."
+        detail=f"Option with name {name} wasn't found."
     )
 
     async def low_options_quantity(self, id: int):
@@ -116,6 +116,18 @@ class MyExceptions:
         return self.exc(
         status_code=status.HTTP_409_CONFLICT,
         detail=f"Question <{name}> already exists in this quiz."
+    )
+
+    async def option_already_exists(self, name):
+        return self.exc(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=f"Option <{name}> already exists in this question."
+    )
+
+    async def data_was_not_found(self):
+        return self.exc(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Data was't found."
     )
 
 

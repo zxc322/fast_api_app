@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.post("/invite_member", response_model=schemas_cm.ResponseMessage, status_code=201)
 async def invite_member(invite: schemas_cm.Invite, user = Depends(read_users_me)) -> schemas_cm.ResponseMessage:
-    company = await CompanyCRUD().get_by_id(id=invite.company_id)
+    company = await CompanyCRUD(db=db).get_by_id(id=invite.company_id)
     await Permissions(user=user).permission_validator_for_company_owner(company=company)
     crud = CompanyMemberCRUD(db=db)
     return await crud.invite_member(invite=invite)

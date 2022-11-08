@@ -21,37 +21,25 @@ async def create_quiz(quiz: schema_q.CreateQuiz, user = Depends(read_users_me)) 
 
 
 @router.post('/option', response_model=schema_q.ResponseId)
-async def append_option(option: schema_q.AppendOption, user = Depends(read_users_me)) -> schema_q.ResponseId:
+async def append_option(options_in: schema_q.AppendOption, user = Depends(read_users_me)) -> schema_q.ResponseId:
+    crud = QuizCRUD(db=db)
+
+    # next code returns quiz_company_id joined to question (we need it for permissions)
+    question = await crud.get_question_by_id(id=options_in.question_id) 
+    company = await CompanyCRUD(db=db).get_by_id(id=question.company_id)    
+    await Permissions(user=user).permission_validator_for_company_owner(company=company)   
+    return await crud.append_option(options_in=options_in)
+
+
+@router.delete('/option', response_model=schema_q.ResponseId)
+async def delete_option(option: schema_q.DeleteOptionByName, user = Depends(read_users_me)) -> schema_q.ResponseId:
     crud = QuizCRUD(db=db)
 
     # next code returns quiz_company_id joined to question (we need it for permissions)
     question = await crud.get_question_by_id(id=option.question_id)  
     company = await CompanyCRUD(db=db).get_by_id(id=question.company_id)    
     await Permissions(user=user).permission_validator_for_company_owner(company=company)   
-    return await crud.append_option(option=option)
-
-@router.post('/change/option', response_model=schema_q.ResponseId)
-async def change_option(option: schema_q.UpdateOption, user = Depends(read_users_me)) -> schema_q.ResponseId:
-    crud = QuizCRUD(db=db)
-   
-    # next code returns quiz_company_id joined to question (we need it for permissions)
-    option_ = await crud.get_option_by_id(id=option.id)
-    question = await crud.get_question_by_id(id=option_.question_id)  
-    company = await CompanyCRUD(db=db).get_by_id(id=question.company_id)    
-    await Permissions(user=user).permission_validator_for_company_owner(company=company)   
-    return await crud.update_option(option=option)
-
-
-@router.delete('/option/{id}', response_model=schema_q.ResponseId)
-async def delete_option(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
-    crud = QuizCRUD(db=db)
-
-    # next code returns quiz_company_id joined to question (we need it for permissions)
-    option_ = await crud.get_option_by_id(id=id)
-    question = await crud.get_question_by_id(id=option_.question_id)  
-    company = await CompanyCRUD(db=db).get_by_id(id=question.company_id)    
-    await Permissions(user=user).permission_validator_for_company_owner(company=company)   
-    return await crud.delete_option(option=option_)
+    return await crud.delete_option(option=option)
 
 
 @router.post('/question', response_model=schema_q.ResponseId)
@@ -77,8 +65,8 @@ async def append_question(question: schema_q.UpdateQuestion, user = Depends(read
 
 
 @router.delete('/question/{id}', response_model=schema_q.ResponseId)
-async def delete_option(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
-    """ Delete option from question, where option.question_id==id (Raise exc if len(options) of this question <=2 """
+async def delete_question(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
+    """ Delete question from quiz, where questiion.id==id (Raise exc if len(questions)  <=2 """
     crud = QuizCRUD(db=db)
 
     # next code returns quiz_company_id joined to question (we need it for permissions)
@@ -89,10 +77,9 @@ async def delete_option(id: int, user = Depends(read_users_me)) -> schema_q.Resp
 
 
 @router.get('/company/{id}', response_model=schema_q.CompaniesQuiezes)
-async def delete_option(id: int, page: int = 1, limit: int = 10) -> schema_q.CompaniesQuiezes:
+async def get_all_quizess_of_company(id: int, page: int = 1, limit: int = 10) -> schema_q.CompaniesQuiezes:
     """ Returns a list of quizes, where quiz.company_id==id"""
 
-    # Idk do we need permissions here? Will add it later if yes ...
     crud = QuizCRUD(db=db)         
     return await crud.get_quiz_list(company_id=id, page=page, limit=limit)
 
@@ -108,7 +95,7 @@ async def update_quiz(quiz: schema_q.UpdateQuiz, user = Depends(read_users_me)) 
 
 
 @router.delete('/{id}', response_model=schema_q.ResponseId)
-async def delete_option(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
+async def delete_quiz(id: int, user = Depends(read_users_me)) -> schema_q.ResponseId:
     """ This endpoint fill "deleted_at" field (we are using it for filter) """
 
     crud = QuizCRUD(db=db)

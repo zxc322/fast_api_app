@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from schemas.token import TokenData
-from schemas.user import User, UserRsposneId
+from schemas import user as schema_u
 from settings import config
 from security.auth0 import VerifyToken
 from utils.exceptions import MyExceptions# credentials_exception
@@ -37,7 +37,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
 
 
 
-async def get_current_user(crud, token) -> UserRsposneId:
+async def get_current_user(crud, token) -> schema_u.ResponseUserDataFromToken:
 
     """ First try to decode token with 'HS256'. If success get user by email and return users id
         If error try to decode with 'RS256'(VerifyToken instanse). 
@@ -50,7 +50,6 @@ async def get_current_user(crud, token) -> UserRsposneId:
             raise await MyExceptions().credentials_exception()
         token_data = TokenData(email=email)
     except JWTError:
-        #raise credentials_exception
         try:
             instanse = VerifyToken(token.credentials, crud=crud)
             result = await instanse.verify()
@@ -58,7 +57,8 @@ async def get_current_user(crud, token) -> UserRsposneId:
         except:
             raise await MyExceptions().credentials_exception()
     user = await crud.get_by_email(email=token_data.email)
+    print('tokenUser', user)
     if user is None:
         raise await MyExceptions().credentials_exception()
-    return UserRsposneId(id=user.id)
+    return schema_u.ResponseUserDataFromToken(id=user.id, is_admin=user.is_admin)
 

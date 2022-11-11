@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 
 from schemas import quiz as  schema_q
-from schemas import quiz_results as  schema_qr
 from repositories.quiz import QuizCRUD
 from repositories.company import CompanyCRUD
 from db.connection import database as db

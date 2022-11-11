@@ -57,7 +57,6 @@ async def get_current_user(crud, token) -> schema_u.ResponseUserDataFromToken:
         except:
             raise await MyExceptions().credentials_exception()
     user = await crud.get_by_email(email=token_data.email)
-    print('tokenUser', user)
     if user is None:
         raise await MyExceptions().credentials_exception()
     return schema_u.ResponseUserDataFromToken(id=user.id, is_admin=user.is_admin)

@@ -9,8 +9,6 @@ from repositories.services.write_quiz_results_to_database import InsertQuizResul
 from repositories.services import nested_quiz_for_client as UI_service
 from utils.exceptions import MyExceptions
 from db.models import quiz as DBQuiz, question as DBQuestion, avarage_mark as DBAvg_mark, quiz_result as DBQuiz_result
-from my_redis.config import init_redis_pool
-from datetime import datetime
 
 
 class QuizResultCRUD:

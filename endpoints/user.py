@@ -55,8 +55,3 @@ async def get_users_list(page: int = 1, limit: int = 10) -> schemas_u.Users:
     crud = UserCRUD(db=db)
     return await crud.get_users(page=page, limit=limit)
 
-
-@router.get("/test/asd")
-async def delete_me():
-    crud = UserCRUD(db=db)
-    return await crud.get_by_email(email='user@example.com')

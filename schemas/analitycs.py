@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from datetime import date
+from datetime import date, datetime
 
 
 class DataIn(BaseModel):
@@ -55,3 +55,44 @@ class MyAvgMark(BaseModel):
     total_questions: int
     right_answers: int
     avarage_mark: int
+
+
+class MyAvgMarkOfChosenQuiz(BaseModel):
+    total_questions: int
+    right_answers: int
+    mark: float
+    date: datetime
+
+
+class MyAvgMarkOfChosenQuizList(BaseModel):
+    my_results: List[MyAvgMarkOfChosenQuiz] = []
+
+
+class LatestQuizData(BaseModel):
+    quiz_id: int
+    date: date
+
+class LatestUsersResults(BaseModel):
+    user_id: int
+    quiz_data: List[LatestQuizData]
+
+class AllUsersLatestDates(BaseModel):
+    results: List[LatestUsersResults]
+
+
+class UserQuizDetails(BaseModel):
+    quiz_id: int
+    details: List[QuizDetails]
+
+
+class UserQuizData(BaseModel):
+    user_id: int
+    quiz_data: List[UserQuizDetails]
+
+
+class AllMembersAvgResults(BaseModel):
+    users: List[UserQuizData]
+
+
+class MyLatestQuizes(BaseModel):
+    results: List[LatestQuizData]

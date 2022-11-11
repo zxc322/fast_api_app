@@ -63,7 +63,7 @@ async def request_member_status(company_id: int, user = Depends(read_users_me)) 
 async def accept_member_status(accept: schemas_cm.AcceptDecline, user = Depends(read_users_me)) -> schemas_cm.ResponseMessage:
     crud = CompanyMemberCRUD(db=db)
     member = await crud.get_by_id(id=accept.id)
-    company = await CompanyCRUD().get_by_id(id=member.company_id)
+    company = await CompanyCRUD(db=db).get_by_id(id=member.company_id)
     await Permissions(user=user).permission_validator_for_company_owner(company=company)
     
     return await crud.accept_member_status(member=member)

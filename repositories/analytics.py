@@ -1,40 +1,23 @@
-from typing import Optional
-import math
-from sqlalchemy import select, func, distinct, desc
-from databases import Database
+from sqlalchemy import select, desc
 
 from schemas import analitycs as schema_a
-
-
-from datetime import datetime
-from db.models import quiz as DBQuiz, question as DBQuestion, company_members as DBCompany_members, quiz_result as DBQuiz_result, avarage_mark
-from utils.exceptions import MyExceptions
 from repositories.services.analitycs_format import complete_results, complete_pretty_dict
+from repositories.services.generic_database import GenericDatabase
 
-
-class AnalitycsCRUD:
-    def __init__(self, db: Database) -> None:
-        self.db = db
-        self.db_quiz = DBQuiz
-        self.db_question = DBQuestion
-        self.db_company_members = DBCompany_members
-        self.db_quiz_result = DBQuiz_result
-        self.db_avarage_mark = avarage_mark
-        self.exc = MyExceptions
-
+class AnalitycsCRUD(GenericDatabase):
 
     async def my_all_quizes_avg(self, user_id) -> schema_a.MyAvgMark:
         """ An avarage mark + statistic about chosen user """
 
         mark = await self.db.fetch_one(select(
-            self.db_avarage_mark.c.quizzes_passed,
-            self.db_avarage_mark.c.total_questions,
-            self.db_avarage_mark.c.right_answers,
-            self.db_avarage_mark.c.avarage_mark).select_from(
-            self.db_avarage_mark).where(self.db_avarage_mark.c.user_id==user_id)
+            self.avarage_mark_table.c.quizzes_passed,
+            self.avarage_mark_table.c.total_questions,
+            self.avarage_mark_table.c.right_answers,
+            self.avarage_mark_table.c.avarage_mark).select_from(
+            self.avarage_mark_table).where(self.avarage_mark_table.c.user_id==user_id)
         )
         if not mark:
-            raise await self.exc().data_was_not_found()
+            raise await self.exception().data_was_not_found()
         return schema_a.MyAvgMark(**dict(mark))
 
 
@@ -42,13 +25,13 @@ class AnalitycsCRUD:
         """ Results authorized user of chozen quiz"""
 
         query = select(
-            self.db_quiz_result.c.total_questions,
-            self.db_quiz_result.c.right_answers,
-            self.db_quiz_result.c.mark,
-            self.db_quiz_result.c.created_at.label('date')
-                ).select_from(self.db_quiz_result).where(
-                    self.db_quiz_result.c.user_id==user_id,
-                    self.db_quiz_result.c.quiz_id==quiz_id
+            self.quiz_result_table.c.total_questions,
+            self.quiz_result_table.c.right_answers,
+            self.quiz_result_table.c.mark,
+            self.quiz_result_table.c.created_at.label('date')
+                ).select_from(self.quiz_result_table).where(
+                    self.quiz_result_table.c.user_id==user_id,
+                    self.quiz_result_table.c.quiz_id==quiz_id
                     )
         
         results = await self.db.fetch_all(query=query)
@@ -60,11 +43,11 @@ class AnalitycsCRUD:
         """ List of authorized user quizes latest date """
 
         query = select(
-            self.db_quiz_result.c.quiz_id,
-            self.db_quiz_result.c.created_at.label('date')
-                ).select_from(self.db_quiz_result).where(
-                    self.db_quiz_result.c.user_id==user_id
-                    ).order_by(desc(self.db_quiz_result.c.created_at))
+            self.quiz_result_table.c.quiz_id,
+            self.quiz_result_table.c.created_at.label('date')
+                ).select_from(self.quiz_result_table).where(
+                    self.quiz_result_table.c.user_id==user_id
+                    ).order_by(desc(self.quiz_result_table.c.created_at))
 
         results = await self.db.fetch_all(query=query)
         response = list()
@@ -85,19 +68,19 @@ class AnalitycsCRUD:
         return schema_a.MyLatestQuizes(results=response)
 
 
-    async def avg_marks_by_quiz_id(self, company_id: int) -> schema_a.AllMembersAvgResults:
+    async def avg_marks_of_chosen_company_members(self, company_id: int) -> schema_a.AllMembersAvgResults:
         """ Avarage mark all members of chosen company """
 
-        members_ids = await self.db.fetch_all(select(self.db_company_members.c.member_id).select_from(
-            self.db_company_members).where(self.db_company_members.c.company_id==company_id)
+        members_ids = await self.db.fetch_all(select(self.company_members_table.c.member_id).select_from(
+            self.company_members_table).where(self.company_members_table.c.company_id==company_id)
         )
 
-        quizes_ids = await self.db.fetch_all(select(self.db_quiz.c.id).select_from(
-            self.db_quiz).where(self.db_quiz.c.company_id==company_id)
+        quizes_ids = await self.db.fetch_all(select(self.quiz_table.c.id).select_from(
+            self.quiz_table).where(self.quiz_table.c.company_id==company_id)
         )
 
         if not members_ids or not quizes_ids:
-             raise await self.exc().data_was_not_found()
+             raise await self.exception().data_was_not_found()
 
 
         members = [member.member_id for member in members_ids]
@@ -105,15 +88,15 @@ class AnalitycsCRUD:
         response = [dict(user_id=d, quiz_data=list()) for d in members]
 
         query = select(
-            self.db_quiz_result.c.user_id,
-            self.db_quiz_result.c.quiz_id, 
-            self.db_quiz_result.c.total_questions,
-            self.db_quiz_result.c.right_answers,
-            self.db_quiz_result.c.mark,
-            self.db_quiz_result.c.created_at.label('date')).select_from(
-            self.db_quiz_result).where(
-                self.db_quiz_result.c.user_id.in_(members),
-                self.db_quiz_result.c.quiz_id.in_(quizes))
+            self.quiz_result_table.c.user_id,
+            self.quiz_result_table.c.quiz_id, 
+            self.quiz_result_table.c.total_questions,
+            self.quiz_result_table.c.right_answers,
+            self.quiz_result_table.c.mark,
+            self.quiz_result_table.c.created_at.label('date')).select_from(
+            self.quiz_result_table).where(
+                self.quiz_result_table.c.user_id.in_(members),
+                self.quiz_result_table.c.quiz_id.in_(quizes))
 
         results = await self.db.fetch_all(query=query)
 
@@ -125,20 +108,20 @@ class AnalitycsCRUD:
     async def single_member_results(self, user_id: int, company_id: int) -> schema_a.ChosenUserAllQuizes:
         """ Results of chosen user ( All quizes of chosen company) """
 
-        quizes_ids = await self.db.fetch_all(select(self.db_quiz.c.id).select_from(
-            self.db_quiz).where(self.db_quiz.c.company_id==company_id)
+        quizes_ids = await self.db.fetch_all(select(self.quiz_table.c.id).select_from(
+            self.quiz_table).where(self.quiz_table.c.company_id==company_id)
         )
 
         quizes = [dict(quiz).get('id') for quiz in quizes_ids]
         query = select(
-            self.db_quiz_result.c.quiz_id, 
-            self.db_quiz_result.c.mark, 
-            self.db_quiz_result.c.total_questions,
-            self.db_quiz_result.c.right_answers,
-            self.db_quiz_result.c.created_at.label('date')).select_from(
-            self.db_quiz_result).where(
-                self.db_quiz_result.c.user_id==user_id,
-                self.db_quiz_result.c.quiz_id.in_(quizes))
+            self.quiz_result_table.c.quiz_id, 
+            self.quiz_result_table.c.mark, 
+            self.quiz_result_table.c.total_questions,
+            self.quiz_result_table.c.right_answers,
+            self.quiz_result_table.c.created_at.label('date')).select_from(
+            self.quiz_result_table).where(
+                self.quiz_result_table.c.user_id==user_id,
+                self.quiz_result_table.c.quiz_id.in_(quizes))
         data = await self.db.fetch_all(query=query)       
         return await complete_results(data)
 
@@ -146,30 +129,30 @@ class AnalitycsCRUD:
     
     async def members_list_latest_results(self, company_id: int) -> schema_a.AllUsersLatestDates:
 
-        members_ids = await self.db.fetch_all(select(self.db_company_members.c.member_id).select_from(
-            self.db_company_members).where(self.db_company_members.c.company_id==company_id)
+        members_ids = await self.db.fetch_all(select(self.company_members_table.c.member_id).select_from(
+            self.company_members_table).where(self.company_members_table.c.company_id==company_id)
         )
 
-        quizes_ids = await self.db.fetch_all(select(self.db_quiz.c.id).select_from(
-            self.db_quiz).where(self.db_quiz.c.company_id==company_id)
+        quizes_ids = await self.db.fetch_all(select(self.quiz_table.c.id).select_from(
+            self.quiz_table).where(self.quiz_table.c.company_id==company_id)
         )
 
         if not members_ids or not quizes_ids:
-             raise await self.exc().data_was_not_found()
+             raise await self.exception().data_was_not_found()
 
         members = [member.member_id for member in members_ids]
         quizes = [dict(quiz).get('id') for quiz in quizes_ids]
         response = [dict(user_id=d, quiz_data=list()) for d in members]
 
         query = select(
-            self.db_quiz_result.c.user_id,
-            self.db_quiz_result.c.quiz_id, 
-            self.db_quiz_result.c.created_at
+            self.quiz_result_table.c.user_id,
+            self.quiz_result_table.c.quiz_id, 
+            self.quiz_result_table.c.created_at
                 ).select_from(
-                    self.db_quiz_result).where(
-                        self.db_quiz_result.c.user_id.in_(members),
-                        self.db_quiz_result.c.quiz_id.in_(quizes)
-                    ).order_by(desc(self.db_quiz_result.c.created_at))
+                    self.quiz_result_table).where(
+                        self.quiz_result_table.c.user_id.in_(members),
+                        self.quiz_result_table.c.quiz_id.in_(quizes)
+                    ).order_by(desc(self.quiz_result_table.c.created_at))
 
 
         results = await self.db.fetch_all(query=query)

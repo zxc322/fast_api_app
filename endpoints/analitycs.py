@@ -37,10 +37,10 @@ async def single_member_results(data_in: schema_a.DataIn, user = Depends(read_us
 
 
 @router.get('/{company_id}', response_model=schema_a.AllMembersAvgResults)
-async def avg_marks_by_quiz_id(company_id: int, user = Depends(read_users_me)) -> schema_a.AllMembersAvgResults:
+async def avg_marks_of_chosen_company_members(company_id: int, user = Depends(read_users_me)) -> schema_a.AllMembersAvgResults:
     company = await CompanyCRUD(db=db).get_by_id(id=company_id)
     await Permissions(user=user).permission_validator_for_company_owner(company=company)
-    return await AnalitycsCRUD(db=db).avg_marks_by_quiz_id(company_id=company_id)
+    return await AnalitycsCRUD(db=db).avg_marks_of_chosen_company_members(company_id=company_id)
 
 
 @router.get('/comapanys_members_latest/{company_id}', response_model=schema_a.AllUsersLatestDates)
